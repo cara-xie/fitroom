@@ -181,6 +181,9 @@ const matScreen = () => M('screen', () => new THREE.MeshPhysicalMaterial({ color
 const matShade = hex => M('shade' + hex, () => new THREE.MeshStandardMaterial({ color: col(hex), roughness: .95, side: THREE.DoubleSide, emissive: col('#ffd9a3'), emissiveIntensity: .55 }));
 const matLeaf = hex => M('leaf' + hex, () => new THREE.MeshStandardMaterial({ color: col(hex), roughness: .6, side: THREE.DoubleSide }));
 /* top-down product photo -> rug texture (white margins trimmed) */
+/* Only a photo stored next to this page can become a 3D texture: matRugPhoto reads the
+   pixels back with getImageData, which a cross-origin store image is not allowed to do. */
+const localPhoto = u => { const s = (typeof PHOTOS !== 'undefined') && PHOTOS[u]; return s && !/^https?:/i.test(s) ? s : null; };
 const matRugPhoto = src => M('rugph' + src, () => {
   const m = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, bumpMap: pileTex(), bumpScale: 1.2 });
   const im = new Image(); im.onload = () => {
@@ -485,7 +488,7 @@ function makeItem(it, style, opts = {}) {
       K.box(tw - .8, tvh - .8, .1, .05, matScreen(), 0, 25.9, z + .62, { cast: false, seg: 1 });
       vase(K, w * .36, 22, 0, .8, pal.accent); break;
     }
-    case 'rug': { const ph = typeof PHOTOS !== 'undefined' && PHOTOS[p.url], m = ph ? matRugPhoto(ph) : matRug(c.plainRug ? 'plain' : p.style, pal, base, w, d, hashStr(p.id) % 997); K.box(w, .45, d, .2, m, 0, 0, 0, { cast: false, seg: 2 }); break; }
+    case 'rug': { const ph = localPhoto(p.url), m = ph ? matRugPhoto(ph) : matRug(c.plainRug ? 'plain' : p.style, pal, base, w, d, hashStr(p.id) % 997); K.box(w, .45, d, .2, m, 0, 0, 0, { cast: false, seg: 2 }); break; }
     case 'lamp': lamp(K, c, g, opts.lights !== false); break;
     case 'plant': plant(K, c, g); break;
     case 'shelf': shelf(K, c, rr); break;
@@ -551,8 +554,8 @@ function buildRoom(group, Wd, Ld, door, win, style, hid, solid) {
   };
   let winInfo = null; const da = doorA(), lg = lcutGeo();
   for (const wall of ['N', 'S', 'W', 'E']) {
-    const hz = wall === 'N' || wall === 'S', len = hz ? Wd : Ld, cut = hid[wall], ops = [], sk = lg && lg.skip[wall];
-    if (sk) ops.push([sk[0], sk[1], 0, 1e4]);
+    const hz = wall === 'N' || wall === 'S', len = hz ? Wd : Ld, cut = hid[wall], ops = [], sk = (lg && lg.skip[wall]) || [];
+    for (const s1 of sk) ops.push([s1[0], s1[1], 0, 1e4]);
     for (const b of blocks()) if (b.wall === wall && !solid && (b.kind === 'door' || b.kind === 'window')) ops.push(b.kind === 'door' ? [b.off, b.off + b.al, 0, 80] : [b.off, b.off + b.al, 30, 78]);
     if (wall === door && !solid) ops.push([da, da + 34, 0, 80]);
     if (win === wall && !solid) { const [a, b] = winSpan(wall); ops.push([a, b, 30, 78]); }
@@ -602,16 +605,21 @@ function buildRoom(group, Wd, Ld, door, win, style, hid, solid) {
     const knob = new THREE.Mesh(new THREE.SphereGeometry(1.15, 16, 12), matMetal('#B08A4A')), kn = mid + inw * 2.2;
     knob.position.set(hz ? da + 30.5 : kn, 36, hz ? kn : da + 30.5); knob.castShadow = true; knob.userData.fix = true; group.add(knob);
   }
-  /* L-shaped room: the two inner walls along the missing corner (cut low, like other walls, on the camera's side) */
+  /* Rooms that are not a plain rectangle: an inner wall along every cut edge that faces the room
+     (cut low, like the other walls, on the camera's side). One edge per L, three per U, and so on. */
   if (lg) {
-    const { h, v } = lg;
     const wall = (cx, cz, sx, sz, out, base) => {
       for (const [top, m, so] of hid[out] ? [[5, wallM, false], [Hh, caster, true]] : [[Hh, wallM, false]]) box(cx, 0, cz, sx, top, sz, m, so);
       base();
     };
-    const hl = h.span[1] - h.span[0], hx = (h.span[0] + h.span[1]) / 2, vl = v.span[1] - v.span[0], vz = (v.span[0] + v.span[1]) / 2;
-    wall(hx, h.out === 'N' ? h.y - t / 2 : h.y + t / 2, hl, t, h.out, () => box(hx, 0, h.out === 'N' ? h.y + .35 : h.y - .35, hl, 4, .7, trim));
-    wall(v.out === 'W' ? v.x - t / 2 : v.x + t / 2, vz, t, vl, v.out, () => box(v.out === 'W' ? v.x + .35 : v.x - .35, 0, vz, .7, 4, vl, trim));
+    for (const iw of lg.walls) {
+      const l = iw.span[1] - iw.span[0], c = (iw.span[0] + iw.span[1]) / 2;
+      if (l < .05) continue;
+      if (iw.kind === 'h') wall(c, iw.out === 'N' ? iw.y - t / 2 : iw.y + t / 2, l, t, iw.out,
+        () => box(c, 0, iw.out === 'N' ? iw.y + .35 : iw.y - .35, l, 4, .7, trim));
+      else wall(iw.out === 'W' ? iw.x - t / 2 : iw.x + t / 2, c, t, l, iw.out,
+        () => box(iw.out === 'W' ? iw.x + .35 : iw.x - .35, 0, c, .7, 4, l, trim));
+    }
   }
   /* built-ins (closet, column, fireplace…): solid blocks, lowered like walls on the camera's side */
   for (const b of blocks()) {

@@ -201,6 +201,17 @@ textarea::placeholder{color:#8f8a84;opacity:1}
 .notes li{margin:0 0 7px;font-size:14.5px}
 .pal{display:flex;gap:6px;margin:4px 0 12px}
 .pal span{width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.seg.wrap{flex-wrap:wrap}
+.cutrow{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;background:var(--bg)}
+.cuthead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+#addCut{margin-top:4px}
+.orient{margin:0 0 22px;padding:11px 14px;border-left:3px solid var(--accent);background:var(--bg);border-radius:0 8px 8px 0;color:var(--muted);font-size:13.5px;line-height:1.5;max-width:38em}
+.orient b{color:var(--ink)}
+.altways{margin:0 0 20px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.altways>summary{cursor:pointer;font-weight:650;font-size:14px;padding:12px 16px;color:var(--ink)}
+.altways[open]>summary{border-bottom:1px solid var(--line)}
+.altways .appcard{border:0;margin:0;background:none;padding:14px 16px}
+.altways .appcard+.appcard{border-top:1px solid var(--line)}
 .appcard{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 22px;background:var(--bg)}
 .appcard svg{grid-row:span 3;width:34px;height:34px;color:var(--accent)}
 .appcard b{font-weight:700}
@@ -617,7 +628,7 @@ const PRODUCTS=(()=>{
 const RETAILERS=[...new Set(PRODUCTS.map(p=>p.retailer))];
 
 /* ---------- State ---------- */
-const S={step:1,room:{type:'living',wft:15,win:0,lft:13,lin:6,door:'S',window:'N',doorOff:12,lcut:null,obs:[]},vibeText:'',styleManual:null,aiWhy:'',aiMust:[],aiPics:false,aiWords:[],aiColors:[],fit:{url:'',name:'',w:null,d:null,h:null,doorW:32,doorH:80,photo:null,status:''},fitBack:false,
+const S={step:1,room:{type:'living',wft:15,win:0,lft:13,lin:6,door:'S',window:'N',doorOff:12,cuts:[],obs:[]},vibeText:'',styleManual:null,aiWhy:'',aiMust:[],aiPics:false,aiWords:[],aiColors:[],fit:{url:'',name:'',w:null,d:null,h:null,doorW:32,doorH:80,photo:null,status:''},fitBack:false,
   tier:'mid',photos:[],photoStyle:null,photoWhy:'',view:'3d',real:true,video:null,forced:{},layout:null,sel:null,dirty:true,skip:new Set(),removed:new Set(),extra:[],catTier:{},catColor:{},catMax:{},storesOff:new Set(),budgetMax:null,userForced:new Set(),budgetNote:'',xn:0};
 
 /* ---------- Helpers ---------- */
@@ -666,9 +677,15 @@ const OBS={closet:{label:'Closet',d:24,w:48,h:96},column:{label:'Column',d:12,w:
   builtin:{label:'Built-in cabinet',d:16,w:48,h:84},fridge:{label:'Fridge',d:30,w:36,h:70},door:{label:'Another door',d:0,w:34,h:0},window:{label:'Another window',d:0,w:48,h:0},radiator:{label:'Radiator / heater',d:6,w:36,h:26},stairs:{label:'Stairs',d:40,w:120,h:96},other:{label:'Something else',d:18,w:24,h:36}};
 const CORNERS={NW:'top-left',NE:'top-right',SW:'bottom-left',SE:'bottom-right'};
 const wallLen=w=>(w==='N'||w==='S')?roomW():roomL();
-function blocks(){const W=roomW(),L=roomL(),r=S.room,out=[];
-  if(r.lcut){const c=r.lcut,w=clamp(c.w,12,W-36),d=clamp(c.d,12,L-36);
-    out.push({kind:'lcut',label:'Not part of the room',x:c.corner.includes('W')?0:W-w,y:c.corner.includes('N')?0:L-d,w,h:d,ht:96})}
+/* A cut is a rectangle of the bounding box that is NOT part of the room. It is anchored to a
+   wall exactly like something built into the room: {wall, off along that wall, w, d into the room}.
+   One cut at a wall's end gives an L-shaped room, one in the middle gives a U, two give a T. */
+function cutRects(){const W=roomW(),L=roomL();
+  return (S.room.cuts||[]).map((c,i)=>{const hz=c.wall==='N'||c.wall==='S',len=hz?W:L,across=hz?L:W;
+    const w=clamp(c.w,12,len),d=clamp(c.d,12,Math.max(12,across-36)),off=clamp(c.off,0,Math.max(0,len-w));
+    const r={N:{x:off,y:0,w,h:d},S:{x:off,y:L-d,w,h:d},W:{x:0,y:off,w:d,h:w},E:{x:W-d,y:off,w:d,h:w}}[c.wall];
+    return{kind:'lcut',label:'Not part of the room',ci:i,wall:c.wall,off,al:w,...r,ht:96}})}
+function blocks(){const W=roomW(),L=roomL(),r=S.room,out=[...cutRects()];
   (r.obs||[]).forEach((o,i)=>{const len=wallLen(o.wall),flat=o.flush||OBS[o.kind].d===0,al=clamp(o.w,4,len),dp=flat?0:clamp(o.d,2,(o.wall==='N'||o.wall==='S'?L:W)-24),off=clamp(o.off,0,len-al);
     const b={N:{x:off,y:0,w:al,h:dp},S:{x:off,y:L-dp,w:al,h:dp},W:{x:0,y:off,w:dp,h:al},E:{x:W-dp,y:off,w:dp,h:al}}[o.wall];
     out.push({kind:o.kind,label:o.flush?OBS[o.kind].label+' (set into the wall)':OBS[o.kind].label,i,wall:o.wall,flat,off,al,...b,ht:flat?0:(o.h||OBS[o.kind].h)})});
@@ -687,15 +704,58 @@ function winSpan(wall){const len=wallLen(wall);let fr=wallFree(wall);
   const [p,q]=fr.sort((x,y)=>(y[1]-y[0])-(x[1]-x[0]))[0]||[0,len],wl=Math.min(60,(q-p)*.6,len*.4),c=(p+q)/2;return[c-wl/2,c+wl/2]}
 /* 3D geometry for an L-shaped room: the two inner walls along the missing corner, the outer-wall stretches to skip,
    and the floor as two rectangles. "out" is the side of each inner wall that faces away from the room. */
-function lcutGeo(){const b=blocks().find(x=>x.kind==='lcut');if(!b)return null;const c=S.room.lcut.corner,N=c.includes('N'),Wc=c.includes('W'),W=roomW(),L=roomL(),T=5;
-  const ext=(a,z,max)=>[a<=.5?a-T:a,z>=max-.5?z+T:z];
-  return{b,N,Wc,h:{y:N?b.y+b.h:b.y,span:ext(b.x,b.x+b.w,W),out:N?'N':'S'},v:{x:Wc?b.x+b.w:b.x,span:ext(b.y,b.y+b.h,L),out:Wc?'W':'E'},
-    skip:{[N?'N':'S']:[b.x<=.5?-T-1:b.x,b.x+b.w>=W-.5?W+T+1:b.x+b.w],[Wc?'W':'E']:[b.y<=.5?-T-1:b.y,b.y+b.h>=L-.5?L+T+1:b.y+b.h]}}}
-function floorRects(t){const W=roomW(),L=roomL(),g=lcutGeo();if(!g)return[{x:-t,y:-t,w:W+2*t,h:L+2*t}];const b=g.b;
-  const A=g.Wc?{x:b.x+b.w,y:-t,w:W+t-(b.x+b.w),h:L+2*t}:{x:-t,y:-t,w:b.x+t,h:L+2*t};
-  const B=g.N?{y:b.y+b.h,h:L+t-(b.y+b.h)}:{y:-t,h:b.y+t};B.x=g.Wc?-t:b.x;B.w=b.w+t;return[A,B]}
+/* For the 3D room: every cut edge that does not sit on the bounding box becomes an inner wall
+   (with the side facing away from the room), and each outer wall loses the spans the cuts cover. */
+function cutGeo(){const cs=cutRects();if(!cs.length)return null;const W=roomW(),L=roomL(),T=5,E=.5;
+  const walls=[],skip={N:[],S:[],W:[],E:[]};
+  const ext=(a,b,max)=>[a<=E?a-T:a,b>=max-E?b+T:b];
+  for(const b of cs){
+    const x0=b.x,x1=b.x+b.w,y0=b.y,y1=b.y+b.h;
+    /* horizontal edges (run along x) */
+    if(y0>E)      walls.push({kind:'h',y:y0,span:ext(x0,x1,W),out:'S'});
+    if(y1<L-E)    walls.push({kind:'h',y:y1,span:ext(x0,x1,W),out:'N'});
+    /* vertical edges (run along y) */
+    if(x0>E)      walls.push({kind:'v',x:x0,span:ext(y0,y1,L),out:'E'});
+    if(x1<W-E)    walls.push({kind:'v',x:x1,span:ext(y0,y1,L),out:'W'});
+    /* the outer wall stretches the cut removes */
+    if(y0<=E)   skip.N.push([x0<=E?-T-1:x0, x1>=W-E?W+T+1:x1]);
+    if(y1>=L-E) skip.S.push([x0<=E?-T-1:x0, x1>=W-E?W+T+1:x1]);
+    if(x0<=E)   skip.W.push([y0<=E?-T-1:y0, y1>=L-E?L+T+1:y1]);
+    if(x1>=W-E) skip.E.push([y0<=E?-T-1:y0, y1>=L-E?L+T+1:y1]);
+  }
+  return{rects:cs,walls,skip,b:cs[0]}}
+/* Kept so older callers keep working; now just the generalised version. */
+function lcutGeo(){return cutGeo()}
+function floorRects(t){const W=roomW(),L=roomL(),cs=cutRects();
+  if(!cs.length)return[{x:-t,y:-t,w:W+2*t,h:L+2*t}];
+  const cut=(cx,cy)=>cs.some(c=>cx>c.x&&cx<c.x+c.w&&cy>c.y&&cy<c.y+c.h);
+  const xs=[...new Set([0,W,...cs.flatMap(c=>[c.x,c.x+c.w]).filter(v=>v>0&&v<W)])].sort((a,b)=>a-b);
+  const ys=[...new Set([0,L,...cs.flatMap(c=>[c.y,c.y+c.h]).filter(v=>v>0&&v<L)])].sort((a,b)=>a-b);
+  /* keep every grid cell whose middle is inside the room, merging along x then along y */
+  let rows=[];
+  for(let j=0;j<ys.length-1;j++){const y0=ys[j],y1=ys[j+1];if(y1-y0<.5)continue;const run=[];
+    for(let i=0;i<xs.length-1;i++){const x0=xs[i],x1=xs[i+1];if(x1-x0<.5)continue;
+      if(cut((x0+x1)/2,(y0+y1)/2))continue;
+      const last=run[run.length-1];
+      if(last&&Math.abs(last.x1-x0)<.01)last.x1=x1;else run.push({x0,x1})}
+    rows.push({y0,y1,run})}
+  const out=[];
+  for(const row of rows)for(const seg of row.run){
+    const prev=out.find(o=>Math.abs(o.y1-row.y0)<.01&&Math.abs(o.x0-seg.x0)<.01&&Math.abs(o.x1-seg.x1)<.01);
+    if(prev)prev.y1=row.y1;else out.push({x0:seg.x0,x1:seg.x1,y0:row.y0,y1:row.y1})}
+  /* push the edges that sit on the bounding box out by t, so the floor runs under the walls */
+  return out.map(o=>({x:o.x0<=.5?-t:o.x0, y:o.y0<=.5?-t:o.y0,
+    w:(o.x1>=W-.5?W+t:o.x1)-(o.x0<=.5?-t:o.x0), h:(o.y1>=L-.5?L+t:o.y1)-(o.y0<=.5?-t:o.y0)}))}
 function floorArea(){return roomW()*roomL()-blocks().reduce((a,b)=>a+(b.kind==='lcut'||b.ht>40?b.w*b.h:0),0)}
-function shapeName(){const r=S.room;return(r.lcut?'L-shaped ':'')+RT().noun}
+function shapeKind(){const cs=S.room.cuts||[];if(!cs.length)return null;
+  const W=roomW(),L=roomL(),atEnd=c=>{const len=(c.wall==='N'||c.wall==='S')?W:L;return c.off<=.5||c.off+c.w>=len-.5};
+  if(cs.length===1)return atEnd(cs[0])?'L':'U';
+  if(cs.length===2&&cs[0].wall===cs[1].wall&&cs.every(atEnd))return 'T';
+  return 'odd'}
+const shapeAdj=()=>{const k=shapeKind();return k?({L:'L-shaped ',U:'U-shaped ',T:'T-shaped ',odd:'odd-shaped '})[k]:''};
+function shapeName(){return shapeAdj()+RT().noun}
+/* Plain-words description of every missing piece, for the summary and the printed build. */
+function cutsText(){const cs=cutRects();return cs.length?cs.map(b=>`a ${fmt(b.w)} \u00d7 ${fmt(b.h)} piece missing from the ${WALLN[b.wall]} side`).join(', '):''}
 function doorRect(wall,W,L){const a=doorA(),s=34;return{N:{x:a,y:0,w:s,h:s},S:{x:a,y:L-s,w:s,h:s},W:{x:0,y:a,w:s,h:s},E:{x:W-s,y:a,w:s,h:s}}[wall]}
 /* Open floor from a rectangle's edge to the nearest wall, cut-out, built-in or other piece, in one direction */
 function clearDir(r,dir,skipKey,items){const W=roomW(),L=roomL(),obs=[...blocks().filter(b=>b.ht>4)];
@@ -903,7 +963,7 @@ function layoutOn(sw){
     if(G.rug)n.push(`Rug extends at least 24" past the table on every side, so chairs stay on it when pulled out.`);
   }
   n.push(`The door's swing on the ${WALLN[dw]} wall is kept clear.`);
-  for(const b of BL){const z=FRONT[b.kind];if(b.kind==='window')continue;n.push(b.kind==='door'?`The second door's swing on the ${WALLN[b.wall]} wall is kept clear.`:b.kind==='lcut'?`The cut-out ${CORNERS[S.room.lcut.corner]} corner (${fmt(b.w)} × ${fmt(b.h)}) stays empty, since it isn't part of the room.`:z?`The ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall keeps ${inch(z)} clear in front of it${b.kind==='closet'?' for its doors':''}.`:`Furniture is kept off the ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall.`)}
+  for(const b of BL){const z=FRONT[b.kind];if(b.kind==='window')continue;n.push(b.kind==='door'?`The second door's swing on the ${WALLN[b.wall]} wall is kept clear.`:b.kind==='lcut'?`The ${fmt(b.w)} \u00d7 ${fmt(b.h)} piece missing from the ${WALLN[b.wall]} side stays empty, since it isn't part of the room.`:z?`The ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall keeps ${inch(z)} clear in front of it${b.kind==='closet'?' for its doors':''}.`:`Furniture is kept off the ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall.`)}
   skipped.forEach(c=>n.push(!PRODUCTS.some(p=>p.cat===c&&storeOK(p))?`${CATS[c].label} left out: none from the stores you picked.`:!PRODUCTS.some(p=>p.cat===c&&storeOK(p)&&priceOK(p,c))?`${CATS[c].label} left out: none under your ${money(S.catMax[c])} limit.`:`${CATS[c].label} left out: no spot with enough clearance in this room.`));
   return out;
 }
@@ -915,7 +975,7 @@ function conflicts(){
     if(hit(L.items[a].r,L.items[b].r)){const m=`${lab(a)} overlaps ${lab(b).toLowerCase()}`;if(!list.includes(m))list.push(m);bad.add(a);bad.add(b)}}
   for(const k of ks)if(!S.skip.has(g(k))&&hit(L.items[k].r,L.door)){const m=`${lab(k)} blocks the door`;if(!list.includes(m))list.push(m);bad.add(k)}
   for(const b of blocks())for(const k of ks){if(S.skip.has(g(k))||(c(k)==='rug'&&b.ht<=4))continue;const fz=frontZone(b);
-    if(hit(L.items[k].r,b)){const m=b.kind==='lcut'?`${lab(k)} is outside the room, in the cut-out corner`:`${lab(k)} overlaps the ${b.label.toLowerCase()}`;if(!list.includes(m))list.push(m);bad.add(k)}
+    if(hit(L.items[k].r,b)){const m=b.kind==='lcut'?`${lab(k)} is outside the room, in a missing piece`:`${lab(k)} overlaps the ${b.label.toLowerCase()}`;if(!list.includes(m))list.push(m);bad.add(k)}
     else if(fz&&c(k)!=='rug'&&hit(L.items[k].r,fz)){const m=b.kind==='door'?`${lab(k)} blocks the second door`:b.kind==='fridge'?`${lab(k)} blocks the fridge door`:`${lab(k)} blocks the ${b.label.toLowerCase()}${b.kind==='closet'?' doors':''}`;if(!list.includes(m))list.push(m);bad.add(k)}}
   return{list,bad};
 }
@@ -977,8 +1037,13 @@ function blocksSVG(fs){let s='<defs><pattern id="hatch" width="6" height="6" pat
   for(const b of blocks()){
     if(b.kind==='lcut'){const W=roomW(),L=roomL(),x0=b.x<=0?-6:b.x,y0=b.y<=0?-6:b.y,x1=b.x+b.w>=W?W+6:b.x+b.w,y1=b.y+b.h>=L?L+6:b.y+b.h;
       s+=`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="var(--bg)"/><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="url(#hatch)" opacity=".35"/>`;
-      const ix=S.room.lcut.corner.includes('W')?b.x+b.w:b.x,iy=S.room.lcut.corner.includes('N')?b.y+b.h:b.y,ex=S.room.lcut.corner.includes('W')?b.x:b.x+b.w,ey=S.room.lcut.corner.includes('N')?b.y:b.y+b.h;
-      s+=`<path d="M${ex} ${iy} L${ix} ${iy} L${ix} ${ey}" fill="none" stroke="var(--wall)" stroke-width="5" stroke-linejoin="miter"/>`;
+      /* every edge of the cut that does not sit on the outer box is an inner wall */
+      const E=.5,seg=[];
+      if(b.y>E)       seg.push([b.x,b.y,b.x+b.w,b.y]);
+      if(b.y+b.h<L-E) seg.push([b.x,b.y+b.h,b.x+b.w,b.y+b.h]);
+      if(b.x>E)       seg.push([b.x,b.y,b.x,b.y+b.h]);
+      if(b.x+b.w<W-E) seg.push([b.x+b.w,b.y,b.x+b.w,b.y+b.h]);
+      for(const [ax,ay,bx,by] of seg)s+=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="var(--wall)" stroke-width="5" stroke-linecap="square"/>`;
       s+=`<text x="${b.x+b.w/2}" y="${b.y+b.h/2}" font-size="${fs*.75}" fill="var(--muted)" text-anchor="middle" dominant-baseline="central">Not part of room</text>`;continue}
     const z=frontZone(b),drag=S.step!==3,hz=b.wall==='N'||b.wall==='S';let g='';
     if(z&&S.step!==4)g+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="var(--zone)"/>`;
@@ -1042,13 +1107,23 @@ function wallOpts(sel,none){return(none?`<option value="none"${sel==='none'?' se
 /* feet + inches box bound to a room setting (path like "lcut.w" or "obs.0.off") */
 function ftinBox(path,v,lbl){v=Math.round(v||0);const f=Math.floor(v/12),i=v-f*12,a=lbl||path;
   return`<div class="ftin" data-fi="${path}"><input type="number" min="0" max="60" value="${f}" data-part="ft" aria-label="${esc(a)} feet"><i>ft</i><input type="number" min="0" max="11" value="${i}" data-part="in" aria-label="${esc(a)} inches"><i>in</i></div>`}
-function shapeUI(){const c=S.room.lcut;return`<fieldset><legend>Room shape</legend>
-<div class="seg"><button type="button" data-shape="rect" class="${c?'':'on'}">Rectangle</button><button type="button" data-shape="L" class="${c?'on':''}">L-shaped</button></div>
-${c?`<p class="hint">For an L-shaped room, enter the full width and depth above (the longest walls), then the corner that's missing and how far it reaches.</p>
-<label class="field"><span class="lbl">Missing corner</span><select id="lcCorner">${Object.entries(CORNERS).map(([k,v])=>`<option value="${k}"${c.corner===k?' selected':''}>${v[0].toUpperCase()+v.slice(1)}</option>`).join('')}</select></label>
-<div class="dim"><span>Missing part, left to right</span>${ftinBox('lcut.w',c.w,'Missing corner width')}</div>
-<div class="dim"><span>Missing part, top to bottom</span>${ftinBox('lcut.d',c.d,'Missing corner depth')}</div>`:''}
-</fieldset>`}
+function presetCuts(kind){const W=roomW(),L=roomL(),w=Math.max(18,Math.round(W*.3/6)*6),d=Math.max(18,Math.round(L*.3/6)*6);
+  if(kind==='rect')return[];
+  if(kind==='L')return[{wall:'N',off:Math.max(0,W-w),w,d}];
+  if(kind==='U')return[{wall:'N',off:Math.max(0,Math.round((W-w)/2/6)*6),w,d}];
+  if(kind==='T'){const tw=Math.max(18,Math.round(W*.25/6)*6);return[{wall:'N',off:0,w:tw,d},{wall:'N',off:Math.max(0,W-tw),w:tw,d}]}
+  return (S.room.cuts&&S.room.cuts.length)?S.room.cuts:[{wall:'N',off:Math.max(0,W-w),w,d}]}
+function shapeUI(){const cs=S.room.cuts||[],k=shapeKind(),sel=k==='odd'?'custom':(k||'rect');
+  const PRE=[['rect','Rectangle'],['L','L-shaped'],['U','One wall steps in'],['T','T-shaped'],['custom','Custom']];
+  return`<fieldset><legend>Room shape</legend>
+<div class="seg wrap">${PRE.map(([v,l])=>`<button type="button" data-shape="${v}" class="${sel===v?'on':''}">${l}</button>`).join('')}</div>
+<p class="hint">${cs.length?'Enter the full width and depth above (the longest walls). Then describe each piece of that rectangle that is not really part of your room \u2014 a corner the room never reaches, or a wall that steps in.':'Enter the full width and depth above. If your room is not a plain rectangle, pick a shape or add a missing piece.'}</p>
+${cs.map((c,i)=>`<div class="cutrow"><div class="cuthead"><b>Missing piece ${i+1}</b><button type="button" class="btn small" data-rmcut="${i}">Remove</button></div>
+<label class="field"><span class="lbl">Against which wall</span><select data-cutwall="${i}">${wallOpts(c.wall)}</select></label>
+<div class="dim"><span>Starts this far from the ${c.wall==='N'||c.wall==='S'?'left':'top'} corner</span>${ftinBox('cuts.'+i+'.off',c.off,'Missing piece '+(i+1)+' start')}</div>
+<div class="dim"><span>Length along that wall</span>${ftinBox('cuts.'+i+'.w',c.w,'Missing piece '+(i+1)+' length')}</div>
+<div class="dim"><span>How far it cuts into the room</span>${ftinBox('cuts.'+i+'.d',c.d,'Missing piece '+(i+1)+' depth')}</div></div>`).join('')}
+<button type="button" class="btn small" id="addCut">+ Add a missing piece</button></fieldset>`}
 function obsUI(){const os=S.room.obs;return`<fieldset><legend>Built into the room</legend>
 <p class="hint">Add closets, extra doors, a fridge, columns or a fireplace so nothing is placed in front of them. Drag them on the floor plan to move them.</p>
 ${os.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-obs="${i}" data-ok="kind">${Object.entries(OBS).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${v.label}</option>`).join('')}</select></label>
@@ -1062,17 +1137,10 @@ ${OBS[o.kind].d===0||o.flush?'':`<div class="dim"><span>How far it sticks out</s
 function p1(){const r=S.room;return`
 <h1>Start with your room</h1>
 <p class="lede">Enter your wall lengths, or scan them with your phone. Every piece Fitroom suggests is checked against these numbers.</p>
+<p class="orient"><b>Three steps:</b> your room, then your vibe, then your design. You fill things in here on the left; your room draws itself on the right as you go.</p>
 <div class="field"><span class="lbl">Room type</span><div class="seg">${Object.entries(ROOMS).map(([k,v])=>`<button type="button" data-type="${k}" class="${r.type===k?'on':''}">${v.label}</button>`).join('')}</div></div>
 <div class="scanrow">${scanBtn()}</div>
 ${S.scanNote?`<p class="scannote">${esc(S.scanNote)}</p>`:''}
-<div class="appcard photocard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 16l5-5 4 4 3-3 6.5 6"/><circle cx="16.5" cy="9.5" r="1.6"/></svg>
-<b>Upload a photo of your room</b>
-<p>Stand in the doorway or a corner and take one photo where you can see the far wall touch the floor at both ends. Fitroom places the furniture you pick right into that photo at true size. Have more than one photo? Add each as another angle. Your photo stays in this browser.</p>
-<label class="btn small"><input type="file" accept="image/*" id="roomPhoto" hidden>${window.FR_REAL&&FR_REAL.hasPhoto&&FR_REAL.hasPhoto()?'Photo added. Change it':'Upload a room photo'}</label></div>
-<div class="appcard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9.5 9.5h5v5h-5z"/><path d="M11 18.5h2"/></svg>
-<b>Or use the Fitroom iPhone app</b>
-<p>The Fitroom app measures your room with the camera in about a minute. iPhone Pro models scan it automatically with LiDAR; other iPhones measure by aiming at three floor corners.</p>
-${appBtn('btn small')}</div>
 <fieldset><legend>Wall lengths</legend>
 <div class="dim"><span>Width, left to right</span><div class="ftin"><input type="number" id="wft" min="6" max="60" value="${r.wft}" aria-label="Width feet"><i>ft</i><input type="number" id="win" min="0" max="11" value="${r.win}" aria-label="Width inches"><i>in</i></div></div>
 <div class="dim"><span>Depth, top to bottom</span><div class="ftin"><input type="number" id="lft" min="6" max="60" value="${r.lft}" aria-label="Depth feet"><i>ft</i><input type="number" id="lin" min="0" max="11" value="${r.lin}" aria-label="Depth inches"><i>in</i></div></div>
@@ -1084,6 +1152,16 @@ ${shapeUI()}
 </div>
 <div class="dim"><span>Door starts this far from the ${r.door==='N'||r.door==='S'?'left':'top'} corner</span>${ftinBox('doorOff',doorA())}</div>
 ${obsUI()}
+<details class="altways"><summary>Two faster ways to do this step</summary>
+<div class="appcard photocard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 16l5-5 4 4 3-3 6.5 6"/><circle cx="16.5" cy="9.5" r="1.6"/></svg>
+<b>Upload a photo of your room</b>
+<p>Stand in the doorway or a corner and take one photo where you can see the far wall touch the floor at both ends. Fitroom places the furniture you pick right into that photo at true size. Have more than one photo? Add each as another angle. Your photo stays in this browser.</p>
+<label class="btn small"><input type="file" accept="image/*" id="roomPhoto" hidden>${window.FR_REAL&&FR_REAL.hasPhoto&&FR_REAL.hasPhoto()?'Photo added. Change it':'Upload a room photo'}</label></div>
+<div class="appcard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9.5 9.5h5v5h-5z"/><path d="M11 18.5h2"/></svg>
+<b>Or use the Fitroom iPhone app</b>
+<p>The Fitroom app measures your room with the camera in about a minute. iPhone Pro models scan it automatically with LiDAR; other iPhones measure by aiming at three floor corners.</p>
+${appBtn('btn small')}</div>
+</details>
 <button class="btn primary wide" data-go="2">Next: choose a vibe</button>
 <button class="btn wide" data-go="4" style="margin-top:8px">Check if a piece of furniture fits</button>`}
 function detectLine(){
@@ -1213,7 +1291,7 @@ function fitCheck(){
     if(best.pinch)lines.push({k:'tight',t:'Gap:',m:'it leaves a narrow gap beside it. Slide it against a wall or corner.'});
     lines.push({k:'info',t:'Measured:',m:`${inch(best.r.w)} × ${inch(best.r.h)} on the floor; ${fmt(best.front)} clear in front${best.pinch?'':`, ${fmt(clearDir(best.r,best.wall==='N'||best.wall==='S'?'W':'N'))} and ${fmt(clearDir(best.r,best.wall==='N'||best.wall==='S'?'E':'S'))} to each side`}.`})}
   const verdict=worst===0?'ok':worst===1?'tight':'no';
-  return{verdict,lines,rect,summary:`${F.name?F.name+': ':''}${inch(w)} W × ${inch(d)} D${h?` × ${inch(h)} H`:''} in a ${fmt(W)} × ${fmt(L)} ${S.room.lcut?'L-shaped ':''}room.`}}
+  return{verdict,lines,rect,summary:`${F.name?F.name+': ':''}${inch(w)} W × ${inch(d)} D${h?` × ${inch(h)} H`:''} in a ${fmt(W)} \u00d7 ${fmt(L)} ${shapeAdj()}room.`}}
 function fitResultHTML(){
   const R=fitCheck();
   if(!R)return`<p class="hint">Enter the piece's width and depth (and height if you know it) to see the result.</p>`;
@@ -1420,7 +1498,7 @@ function finalBuild(){let pic='';
   const gs=groups().filter(x=>!S.skip.has(x.g)),r=S.room,ww=r.window,tot=gs.reduce((a,x)=>a+x.price,0),by={};
   for(const x of gs)(by[x.p.retailer]=by[x.p.retailer]||[]).push(x);
   openDlg(`<h3>Your final build</h3>
-<p>${STYLES[S.layout.style].name} ${shapeName()}, ${fmt(roomW())} × ${fmt(roomL())}${r.lcut?` with the ${CORNERS[r.lcut.corner]} corner (${fmt(r.lcut.w)} × ${fmt(r.lcut.d)}) cut out`:''}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[r.door]} wall, ${fmt(doorA())} from the corner${ww!=='none'?`; window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').map(b=>`; ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall`).join('')}.</p>
+<p>${STYLES[S.layout.style].name} ${shapeName()}, ${fmt(roomW())} × ${fmt(roomL())}${cutsText()?` with ${cutsText()}`:''}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[r.door]} wall, ${fmt(doorA())} from the corner${ww!=='none'?`; window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').map(b=>`; ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall`).join('')}.</p>
 ${pic}
 <table class="buildtab"><thead><tr><th>Piece</th><th>Color and finish</th><th>Size (W × D)</th><th>Price</th></tr></thead><tbody>
 ${gs.map(x=>`<tr><td><b>${CATS[x.cat].label}${x.cat==='tv'?' (no TV)':''}${x.n>1?` × ${x.n}`:''}</b><br><a href="${x.p.url}" target="_blank" rel="noopener">${esc(x.p.name)}</a><br><span class="meta">${x.p.retailer} · ${TIERS[x.p.tier].label}</span></td><td>${esc(finishOf(x.p)||'as listed')}</td><td>${inch(x.p.w)} × ${inch(x.p.d)}</td><td>${money(x.price)}</td></tr>`).join('')}
@@ -1464,7 +1542,11 @@ function markDirty(){S.dirty=true;S.forced={};S.userForced.clear()}
 document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]');if(g){go(+g.dataset.go);return}
   const idea=e.target.closest('[data-idea]');if(idea){const t=$('#vibe');if(t){t.value=IDEAS[+idea.dataset.idea][1];t.dispatchEvent(new Event('input',{bubbles:true}));t.focus();t.setSelectionRange(t.value.length,t.value.length)}return}
-  const sh=e.target.closest('[data-shape]');if(sh){S.room.lcut=sh.dataset.shape==='L'?(S.room.lcut||{corner:'NE',w:Math.round(roomW()*.4/6)*6,d:Math.round(roomL()*.4/6)*6}):null;roomChanged(true);return}
+  const sh=e.target.closest('[data-shape]');if(sh){S.room.cuts=presetCuts(sh.dataset.shape);roomChanged(true);return}
+  const rc=e.target.closest('[data-rmcut]');if(rc){S.room.cuts.splice(+rc.dataset.rmcut,1);roomChanged(true);return}
+  if(e.target.closest('#addCut')){const W=roomW(),L=roomL(),taken=(S.room.cuts||[]).map(c=>c.wall);
+    const wall=['N','E','S','W'].find(w=>!taken.includes(w))||'N',hz=wall==='N'||wall==='S';
+    S.room.cuts.push({wall,off:0,w:Math.max(18,Math.round((hz?W:L)*.3/6)*6),d:Math.max(18,Math.round((hz?L:W)*.3/6)*6)});roomChanged(true);return}
   if(e.target.closest('#addObs')){const k='closet',taken=S.room.obs.map(o=>o.wall),seg=w=>wallFree(w).sort((a,b)=>(b[1]-b[0])-(a[1]-a[0]))[0]||[0,0];
     const wall=['N','E','W','S'].filter(w=>w!==S.room.door&&!taken.includes(w)).sort((a,b)=>(seg(b)[1]-seg(b)[0])-(seg(a)[1]-seg(a)[0]))[0]||'N',[a,b]=seg(wall);
     S.room.obs.push({kind:k,wall,off:Math.max(0,Math.round((a+b-OBS[k].w)/2)),w:OBS[k].w,d:OBS[k].d,h:OBS[k].h});S.view='plan';roomChanged(true);return}
@@ -1585,7 +1667,8 @@ document.addEventListener('change',e=>{
     S.sel=grpKeys(g)[0]||null;const ps=panel.scrollTop;render();panel.scrollTop=ps;return}
   if(['wft','win','lft','lin'].includes(id))e.target.value=S.room[id];
   if(id==='door'){S.room.door=e.target.value;roomChanged(true)}
-  if(id==='lcCorner'){S.room.lcut.corner=e.target.value;roomChanged(true)}
+  const cw=e.target.closest&&e.target.closest('[data-cutwall]');
+  if(cw){const i=+cw.dataset.cutwall,c=S.room.cuts[i];if(c){c.wall=e.target.value;c.off=0}roomChanged(true);return}
   if(e.target.dataset&&e.target.dataset.obs!=null){const o=S.room.obs[+e.target.dataset.obs];o[e.target.dataset.ok]=e.target.type==='checkbox'?e.target.checked:e.target.value;
     if(e.target.dataset.ok==='kind'){o.w=OBS[o.kind].w;o.d=OBS[o.kind].d;o.h=OBS[o.kind].h;o.flush=false}S.view='plan';roomChanged(true)}
   if(e.target.closest&&e.target.closest('[data-fi]')){roomChanged(true);return}
@@ -1728,8 +1811,8 @@ void main(){
     for(const f of floorRects(t))add('box',T0,f.x+f.w/2,-2,f.y+f.h/2,f.w,2,f.h,look.floor,1,look.mode);
     const lg=lcutGeo();
     for(const wall of ['N','S','W','E']){
-      const hz=wall==='N'||wall==='S',len=hz?Wd:Ld,top=hid[wall]?5:Hh,ops=[],sk=lg&&lg.skip[wall];
-      if(sk)ops.push([sk[0],sk[1],0,1e4]);
+      const hz=wall==='N'||wall==='S',len=hz?Wd:Ld,top=hid[wall]?5:Hh,ops=[],sk=(lg&&lg.skip[wall])||[];
+      for(const s1 of sk)ops.push([s1[0],s1[1],0,1e4]);
       for(const b of blocks())if(b.wall===wall&&(b.kind==='door'||b.kind==='window'))ops.push(b.kind==='door'?[b.off,b.off+b.al,0,80]:[b.off,b.off+b.al,30,78]);
       if(wall===dw)ops.push([da,da+34,0,80]);
       if(ww===wall){const [a,b]=winSpan(wall);ops.push([a,b,30,78])}
@@ -1750,12 +1833,13 @@ void main(){
     if(!hid[dw]){const hz=dw==='N'||dw==='S',inw={N:1,S:-1,W:1,E:-1}[dw],mid={N:0,S:Ld,W:0,E:Wd}[dw]-inw*1.6;
       const A=(u,y,al,sy,th,off,c,g='box')=>{const n=mid+inw*off;hz?add(g,T0,u,y,n,al,sy,th,c):add(g,T0,n,y,u,th,sy,al,c)};
       A(da+17,0,33.6,80,1.75,0,'#EFEAE2');A(da+17,44,25,30,.35,1,'#E6E1D8');A(da+17,8,25,30,.35,1,'#E6E1D8');A(da+30.5,35,2.2,2.2,2.2,2.2,'#B08A4A','sph')}
-    /* L-shaped room: the two inner walls along the missing corner */
-    if(lg){const {h,v}=lg,ht=x=>hid[x]?5:Hh;
-      add('box',T0,(h.span[0]+h.span[1])/2,0,h.out==='N'?h.y-t/2:h.y+t/2,h.span[1]-h.span[0],ht(h.out),t,look.wall);
-      add('box',T0,v.out==='W'?v.x-t/2:v.x+t/2,0,(v.span[0]+v.span[1])/2,t,ht(v.out),v.span[1]-v.span[0],look.wall);
-      add('box',T0,(h.span[0]+h.span[1])/2,0,h.out==='N'?h.y+.35:h.y-.35,h.span[1]-h.span[0],4,.7,shade(look.wall,.35));
-      add('box',T0,v.out==='W'?v.x+.35:v.x-.35,0,(v.span[0]+v.span[1])/2,.7,4,v.span[1]-v.span[0],shade(look.wall,.35))}
+    /* Rooms that are not a plain rectangle: an inner wall along every cut edge facing the room */
+    if(lg){const ht=x=>hid[x]?5:Hh;
+      for(const iw of lg.walls){const l=iw.span[1]-iw.span[0],c=(iw.span[0]+iw.span[1])/2;if(l<.05)continue;
+        if(iw.kind==='h'){add('box',T0,c,0,iw.out==='N'?iw.y-t/2:iw.y+t/2,l,ht(iw.out),t,look.wall);
+          add('box',T0,c,0,iw.out==='N'?iw.y+.35:iw.y-.35,l,4,.7,shade(look.wall,.35))}
+        else{add('box',T0,iw.out==='W'?iw.x-t/2:iw.x+t/2,0,c,t,ht(iw.out),l,look.wall);
+          add('box',T0,iw.out==='W'?iw.x+.35:iw.x-.35,0,c,.7,4,l,shade(look.wall,.35))}}}
     /* built-ins: solid blocks, lowered like the walls on the camera's side */
     for(const b of blocks()){if(b.kind==='lcut'||b.kind==='door'||b.kind==='window')continue;
       if(b.flat){if(hid[b.wall])continue;const hz=b.wall==='N'||b.wall==='S',n={N:.5,S:Ld-.5,W:.5,E:Wd-.5}[b.wall];
@@ -1944,14 +2028,18 @@ window.fitroomApplyScan=function(d){
     W=Math.max(...pts.map(p=>p[0]));L=Math.max(...pts.map(p=>p[1]));
     const off90=w=>{const a=Math.abs(Math.atan2(w[3]-w[1],w[2]-w[0])*180/Math.PI)%90;return Math.min(a,90-a)};
     const angled=walls.some(w=>Math.hypot(w[2]-w[0],w[3]-w[1])>18&&off90(w)>6);
-    S.room.lcut=null;
+    S.room.cuts=[];
     if(!angled){const near=(x,y)=>pts.some(p=>Math.hypot(p[0]-x,p[1]-y)<14);
       const miss=Object.entries({NW:[0,0],NE:[W,0],SW:[0,L],SE:[W,L]}).filter(([,c])=>!near(c[0],c[1]));
-      if(miss.length===1){const [k,c]=miss[0],inner=pts.filter(p=>p[0]>14&&p[0]<W-14&&p[1]>14&&p[1]<L-14);
-        if(inner.length){const dd=p=>Math.hypot(p[0]-c[0],p[1]-c[1]),q=inner.reduce((a,p)=>dd(p)<dd(a)?p:a),cw=Math.abs(c[0]-q[0]),cd=Math.abs(c[1]-q[1]);
-          if(cw>=24&&cd>=24&&cw<W-30&&cd<L-30)S.room.lcut={corner:k,w:r(cw),d:r(cd)}}}}
+      const inner=pts.filter(p=>p[0]>14&&p[0]<W-14&&p[1]>14&&p[1]<L-14);
+      if(miss.length>=1&&miss.length<=2&&inner.length)for(const [k,c] of miss){
+        const dd=p=>Math.hypot(p[0]-c[0],p[1]-c[1]),q=inner.reduce((a,p)=>dd(p)<dd(a)?p:a),cw=Math.abs(c[0]-q[0]),cd=Math.abs(c[1]-q[1]);
+        if(cw>=24&&cd>=24&&cw<W-30&&cd<L-30){
+          /* a missing corner becomes a cut against its top or bottom wall */
+          const wall=k.includes('N')?'N':'S',off=k.includes('W')?0:Math.max(0,r(W-cw));
+          S.room.cuts.push({wall,off,w:r(cw),d:r(cd)})}}}
     if(angled)note=' Your room has an angled wall. Fitroom uses the box around the room for now, so double-check pieces near that wall.';
-    else if(!S.room.lcut&&walls.length>4)note=' Your room has more than four walls. Fitroom uses the box around it for now; add a cut-out corner or closets below if needed.';
+    else if(!(S.room.cuts||[]).length&&walls.length>4)note=' Your room has more than four walls. Fitroom used the box around it; add a missing piece or a closet below so the shape matches.';
     /* doors, open doorways and windows: each goes on the nearest outer wall */
     const snap=sg=>{const s2=sh(sg),cx=(s2[0]+s2[2])/2,cy=(s2[1]+s2[3])/2,len=Math.hypot(s2[2]-s2[0],s2[3]-s2[1]),dd={N:cy,S:L-cy,W:cx,E:W-cx},wall=Object.keys(dd).sort((a,b)=>dd[a]-dd[b])[0];
       return{wall,len,off:(wall==='N'||wall==='S'?cx:cy)-len/2}};
@@ -1963,7 +2051,7 @@ window.fitroomApplyScan=function(d){
     for(const x of ws.slice(1))S.room.obs.push({kind:'window',wall:x.wall,off:Math.max(0,r(x.off)),w:r(clamp(x.len,12,144)),d:0,h:0});
   }else{W=d.length*IN;L=d.width*IN}
   W=clamp(r(W),72,720);L=clamp(r(L),72,720);Object.assign(S.room,{wft:Math.floor(W/12),win:W%12,lft:Math.floor(L/12),lin:L%12});
-  S.scanNote=`Measured with ${d.method==='lidar'?'LiDAR':d.method==='arTap'?'your phone camera':'your numbers'}: ${fmt(W)} × ${fmt(L)}${S.room.lcut?', L-shaped':''}${P?`, ${nd} door${nd===1?'':'s'} and ${nw} window${nw===1?'':'s'}`:'. Check the door and window walls below'}.`+note;
+  S.scanNote=`Measured with ${d.method==='lidar'?'LiDAR':d.method==='arTap'?'your phone camera':'your numbers'}: ${fmt(W)} \u00d7 ${fmt(L)}${shapeAdj()?', '+shapeAdj().trim():''}${P?`, ${nd} door${nd===1?'':'s'} and ${nw} window${nw===1?'':'s'}`:'. Check the door and window walls below'}.`+note;
   markDirty();S.extra=[];S.step=S.fitBack?4:1;S.fitBack=false;S.view='plan';render();window.scrollTo({top:0});panel.scrollTop=0};
 function scanBtn(){
   if(IN_APP&&window.FITROOM_APP.scan)return`<button type="button" class="btn primary" data-nscan="1">${window.FITROOM_APP.lidar?'Scan my room (LiDAR)':'Measure my room with the camera'}</button>`;
