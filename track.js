@@ -4,7 +4,7 @@
    SETUP: paste your PostHog "Project API key" (starts with phc_) below, then push.
    Until a key is set, events are only kept in this browser (open the site with ?debug=track to see them).
    Your own testing: open the site once with ?notrack=1 and this browser stops sending events (?notrack=0 turns it back on). */
-const TRACK_KEY = '';                              // e.g. 'phc_abc123...'
+const TRACK_KEY = 'phc_wNcN2zwQapSuw6bVQLuSECynnwWxXS225tGxYtC7juah';   // PostHog project token (US), public by design
 const TRACK_HOST = 'https://us.i.posthog.com';     // use 'https://eu.i.posthog.com' if your PostHog project is in the EU
 
 /* The one paid offer (in the fit report). Prices and wording live here so they are easy to change week to week. */
