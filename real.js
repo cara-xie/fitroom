@@ -13,7 +13,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { solveFloor, projectFloor } from './photosolve.js';
+import { solveFloor, projectFloor, floorFromPixel } from './photosolve.js';
 
 const MOBILE = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
 const DPR = () => Math.min(window.devicePixelRatio || 1, MOBILE ? 1.5 : 2);
@@ -633,7 +633,7 @@ function buildRoom(group, Wd, Ld, door, win, style, hid, solid) {
     const near = (b.y <= .5 && hid.N) || (b.y + b.h >= Ld - .5 && hid.S) || (b.x <= .5 && hid.W) || (b.x + b.w >= Wd - .5 && hid.E);
     const wallish = b.kind === 'lcut' || b.kind === 'column' || b.kind === 'closet', h = near ? Math.min(5, b.ht) : b.ht;
     const m = b.kind === 'fridge' ? M('fridge', () => new THREE.MeshStandardMaterial({ color: col('#D9DCDF'), roughness: .3, metalness: .6 })) : wallish ? wallM : b.kind === 'fireplace' ? M('stone', () => new THREE.MeshStandardMaterial({ color: col('#B9B2A8'), roughness: .9 }))
-      : b.kind === 'radiator' ? matPaint('#F2F1EE') : M('blk' + b.kind, () => new THREE.MeshStandardMaterial({ color: col(b.kind === 'stairs' ? '#9C8B78' : '#7D6A58'), roughness: .7 }));
+      : b.kind === 'radiator' ? matPaint('#F2F1EE') : b.kind === 'have' ? M('have', () => new THREE.MeshStandardMaterial({ color: col('#CDBFA6'), roughness: .85 })) : M('blk' + b.kind, () => new THREE.MeshStandardMaterial({ color: col(b.kind === 'stairs' ? '#9C8B78' : '#7D6A58'), roughness: .7 }));
     box(b.x + b.w / 2, 0, b.y + b.h / 2, b.w, h, b.h, m);
     if (near) continue;
     if (b.kind === 'closet' && b.wall) {
@@ -777,10 +777,13 @@ class PhotoView {
       if (e.target.id === 'pvAdd' && e.target.files[0]) { const fr = new FileReader(); fr.onload = () => this.setPhoto(fr.result, true); fr.readAsDataURL(e.target.files[0]); e.target.value = ''; }
       if (e.target.id === 'pvWall') { this.ph.wall = e.target.value; this.solve(); this.paint(); }
       if (e.target.id === 'pvLens') { this.ph.lens = e.target.value; this.solve(); this.paint(); }
+      if (e.target.id === 'pvMarkKind') this.markKind = e.target.value;
     });
     this.el.addEventListener('click', e => {
       if (e.target.closest('#pvAlign')) { this.ph.mode = this.ph.mode === 'align' ? 'place' : 'align'; if (this.ph.mode === 'align') { S.sel = null; } else { this.ph.done = true; if (R3) R3.dirty = true; } this.bars(); this.paint(); }
       if (e.target.closest('#pvBird')) this.birdsEye();
+      if (e.target.closest('#pvMark')) { this.ph.mode = this.ph.mode === 'mark' ? 'place' : 'mark'; S.sel = null; this.bars(); this.paint(); this.status(this.ph.mode === 'mark' ? (this.sol && this.sol.ok ? 'Tap the floor under each piece.' : 'Line up the floor first, then mark furniture.') : ''); }
+      if (e.target.closest('#pvFind')) this.findFurniture();
       if (e.target.closest('#pvSave')) this.save();
       if (e.target.closest('#pvUseFit')) this.setPhoto(S.fit.photo);
       if (e.target.closest('#pvLook')) this.lookFrom3D();
@@ -790,6 +793,14 @@ class PhotoView {
       if (e.target.closest('#pvDrop') && this.shots.length > 1) { this.shots.splice(this.shots.indexOf(this.ph), 1); this.ph = this.shots[0]; this.img.src = this.ph.src; this.solve(); this.bars(); this.paint(); }
     });
     new ResizeObserver(() => this.ph && this.paint()).observe(this.stage);
+    /* mark mode: a tap on the floor adds a piece you already own at that spot */
+    this.stage.addEventListener('pointerdown', e => {
+      if (!this.ph || this.ph.mode !== 'mark') return; e.preventDefault(); e.stopPropagation();
+      if (!this.sol || !this.sol.ok) { this.status('Line up the floor first, then mark furniture.'); return; }
+      const f = this.floorAt(e); if (!f) return;
+      const W = roomW(), L = roomL(); if (f.x < -12 || f.z < -12 || f.x > W + 12 || f.z > L + 12) { this.status('That spot is outside the room. Tap the floor under the piece.'); return; }
+      const o = window.frAddHave(this.markKind || 'sofa', f.x, f.z); this.status(`Added ${haveLabel(o).toLowerCase()}. Tap to add another, or tap Done marking.`); this.paint();
+    }, true);
     /* dots (align mode) */
     this.svg.addEventListener('pointerdown', e => {
       const h = e.target.closest('[data-h]'); if (!h || !this.ph || this.ph.mode !== 'align') return;
@@ -900,6 +911,10 @@ class PhotoView {
         ${this.shots.length > 1 ? '<button type="button" class="btn small" id="pvDrop">Remove this angle</button>' : ''}</div>
       <label class="btn small"><input type="file" accept="image/*" id="pvFile" hidden>Change photo</label>
       <button type="button" class="btn small${p.mode === 'align' ? ' primary' : ''}" id="pvAlign">${p.mode === 'align' ? 'Done, place furniture' : 'Line up the floor'}</button>
+      ${p.mode === 'align' ? '' : `<button type="button" class="btn small${p.mode === 'mark' ? ' primary' : ''}" id="pvMark">${p.mode === 'mark' ? 'Done marking' : 'Mark furniture already here'}</button>`}
+      ${p.mode === 'mark' ? `<div class="pv-mark"><label class="pv-sel"><span>Next tap adds</span><select id="pvMarkKind">${Object.entries(HAVE).map(([k, v]) => `<option value="${k}"${(this.markKind || 'sofa') === k ? ' selected' : ''}>${v.label}</option>`).join('')}</select></label>
+        <button type="button" class="btn small" id="pvFind">Find it for me (Claude)</button>
+        <p class="hint">Tap the floor right under the middle of each piece that's already in your room. Fitroom then plans new furniture around it. Adjust sizes in step 1 under "What's already in the room".</p></div>` : ''}
       <button type="button" class="btn small" id="pvBird" title="Your photos painted onto the 3D room. Pinch to zoom, drag to turn, two fingers to move.">Bird's-eye view of my room</button>
       <button type="button" class="btn small" id="pvLook" title="Opens the 3D room from where you stood. Drag to turn and look past anything blocking the photo.">Look around from here in 3D</button>
       <label class="pv-sel"><span>Wall you're facing</span><select id="pvWall">${['N', 'E', 'S', 'W'].map(opt).join('')}</select></label>
@@ -934,7 +949,7 @@ class PhotoView {
     this.svg.style.pointerEvents = p.mode === 'align' ? 'auto' : 'none'; this.cv.style.pointerEvents = p.mode === 'align' ? 'none' : 'auto';
     this.overlay(R); this.render3();
     const st = document.getElementById('pvStatus'), s = this.sol;
-    if (st) st.textContent = !s ? '' : !s.ok ? s.why : p.mode === 'align'
+    if (st) st.textContent = !s ? '' : !s.ok ? s.why : p.mode === 'mark' ? (this.markMsg || 'Tap the floor right under the middle of each piece that is already in the room.') : p.mode === 'align'
       ? `Drag each yellow dot to the spot its tag names. The white grid should lie flat on your floor in 1 ft squares. Camera about ${fmt(s.camH)} up (phones are usually held 4–5 ft up).`
       : `Showing your ${WALLNAME[p.wall].toLowerCase()} wall, ${fmt(this.wallWidth())} wide, at true scale. Drag a piece to move it.`;
     this.updCard();
@@ -960,6 +975,14 @@ class PhotoView {
         h += `<g class="pv-tag" transform="translate(${tx},${ty})"><rect width="${tw}" height="20" rx="10"/><text x="${tw / 2}" y="14">${t}</text></g>`;
       });
       Q.forEach((q, i) => { h += `<g data-h="${i}" class="pv-h" transform="translate(${q[0]},${q[1]})"><circle r="16" class="pv-hit"/><circle r="9"/><text y="4">${i + 1}</text></g>`; });
+    }
+    if (s && s.ok && p.mode !== 'align') {
+      const F = this.frameOf(p.wall);
+      for (const o of S.room.have || []) {
+        const cs = [[o.x, o.y], [o.x + o.w, o.y], [o.x + o.w, o.y + o.d], [o.x, o.y + o.d]].map(([x, y]) => { const v = new THREE.Vector3(x, 0, y).applyMatrix4(F); return P(projectFloor(s, v.x, v.z)); });
+        if (cs.some(c => !c)) continue; const cx = cs.reduce((a, c) => a + c[0], 0) / 4, cy = cs.reduce((a, c) => a + c[1], 0) / 4, lab = haveLabel(o);
+        h += `<polygon points="${cs.map(c => c.join(',')).join(' ')}" class="pv-have"/><g class="pv-tag" transform="translate(${cx - lab.length * 3.4 - 8},${cy - 10})"><rect width="${lab.length * 6.8 + 16}" height="20" rx="10"/><text x="${lab.length * 3.4 + 8}" y="14">${esc(lab)}</text></g>`;
+      }
     }
     this.svg.innerHTML = h;
     const g = this.guide, showG = p.mode === 'align' && !this.guideOff;
@@ -994,6 +1017,35 @@ class PhotoView {
     this.sun.color.copy(p.tint || col('#ffffff')); this.hemi.color.copy(p.tint || col('#ffffff'));
     this.r.toneMappingExposure = clamp(.55 + lum * 1.4, .62, 1.08); this.sun.intensity = 1.6 + lum * 2.4; this.scene.environmentIntensity = .55 + lum * .8;
     this.r.render(this.scene, this.cam);
+  }
+  status(t) { this.markMsg = t || ''; const el = document.getElementById('pvStatus'); if (el) el.textContent = t || ''; }
+  /* Claude looks at the photo and says where each existing piece touches the floor; we turn that into spots in the room */
+  async findFurniture() {
+    const p = this.ph, s = this.sol; if (!p || !s || !s.ok) { this.status('Line up the floor first.'); return; }
+    const btn = document.getElementById('pvFind'); if (btn) btn.disabled = true; this.status('Claude is looking at your photo…');
+    let j = null;
+    try {
+      const img = await shrinkPhoto(p.src);
+      const r = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ find: true, image: img, kinds: Object.keys(HAVE) }) });
+      const raw = await r.text(), m = raw.match(/\{[\s\S]*\}/); j = m ? JSON.parse(m[0]) : null;
+    } catch (e) { j = null; }
+    if (btn) btn.disabled = false;
+    const items = j && Array.isArray(j.items) ? j.items : null;
+    if (!items) { this.status('Claude couldn\'t read the photo right now. Tap the floor under each piece instead.'); return; }
+    const inv = this.frameOf(p.wall).invert(), W = roomW(), L = roomL(); let n = 0;
+    for (const it of items.slice(0, 12)) {
+      const u = +it.x / 1000 * p.w, v = +it.y / 1000 * p.h; if (!(u >= 0 && v >= 0)) continue;
+      const fp = floorFromPixel(s, u, v); if (!fp) continue;
+      const q = new THREE.Vector3(fp[0], 0, fp[1]).applyMatrix4(inv); if (q.x < -12 || q.z < -12 || q.x > W + 12 || q.z > L + 12) continue;
+      const k = HAVE[it.kind] ? it.kind : 'other', ex = {};
+      if (+it.width_in > 6) ex.w = +it.width_in; if (+it.depth_in > 6) ex.d = +it.depth_in;
+      /* sizes Claude gives are along the piece; turn them if the piece faces a side wall */
+      if (it.facing === 'side' && ex.w && ex.d) [ex.w, ex.d] = [ex.d, ex.w];
+      addHave(k, q.x, q.z, ex); n++;
+    }
+    window.frHaveChanged();
+    this.status(n ? `Claude found ${n} piece${n > 1 ? 's' : ''}. These are estimates: check each outline on the photo, and fix sizes in step 1.` : 'Claude didn\'t find furniture on the floor in this photo. Tap under each piece instead.');
+    this.bars(); this.paint();
   }
   /* ---- moving furniture on the photo ---- */
   ray(e) { const b = this.box(); this.raycaster.setFromCamera(new THREE.Vector2((e.clientX - b.left) / b.width * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1), this.cam); return this.raycaster; }

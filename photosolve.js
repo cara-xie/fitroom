@@ -77,3 +77,15 @@ export function projectFloor(sol, X, Y, Z = 0) {
   if (p[2] <= 1) return null;
   return [cx + f*p[0]/p[2], cy + f*p[1]/p[2]];
 }
+
+/* image pixel -> floor point (inches, same frame as solveFloor), or null if that pixel is above the horizon */
+export function floorFromPixel(sol, u, v) {
+  const { r1, r2, t, f, cx, cy } = sol, d = [(u - cx) / f, (v - cy) / f, 1];
+  /* solve r1*X + r2*Y - d*s = -t */
+  const A = [[r1[0], r2[0], -d[0]], [r1[1], r2[1], -d[1]], [r1[2], r2[2], -d[2]]], b = [-t[0], -t[1], -t[2]];
+  const det = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  const D = det(A); if (Math.abs(D) < 1e-12) return null;
+  const col = (i) => A.map((row, k) => row.map((x, j) => j === i ? b[k] : x));
+  const X = det(col(0)) / D, Y = det(col(1)) / D, s = det(col(2)) / D;
+  return s > 0 ? [X, Y] : null;
+}

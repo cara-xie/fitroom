@@ -15,6 +15,67 @@ const STYLE_SYSTEM =
 const SIZE_SYSTEM =
   'You read text taken from a furniture product web page. Find the overall dimensions of the main item in inches (convert centimeters by dividing by 2.54). Width is the longest side along the front, depth is front to back, height is floor to top. If several sizes or variants are listed, use the first or default one and say so in "note". If the page has no dimensions, use null. Reply with ONLY JSON: {"name":"short product name","width_in":number or null,"depth_in":number or null,"height_in":number or null,"note":"one short sentence"}';
 
+/* When the store blocks our own page fetch (or the page hides its sizes), Claude opens the link itself
+   with its web fetch tool, and if that is blocked too, searches the web for the same product's dimensions. */
+const BROWSE_SYSTEM =
+  "You find the overall dimensions of one furniture product for a room-planning app. Open the product link with web_fetch. " +
+  "If the page is blocked, empty or has no dimensions, use web_search for the exact product name (from the page title or the link's words) plus 'dimensions', " +
+  "and prefer the store's own pages, then other big retailers selling the identical item. Never guess or use a different product. " +
+  "Width is the longest side along the front, depth is front to back, height is floor to top, all in inches (centimeters / 2.54). " +
+  'Finish with ONLY this JSON and nothing else: {"name":"short product name","width_in":number or null,"depth_in":number or null,"height_in":number or null,"note":"one short sentence saying where the size came from"}';
+
+const FIND_SYSTEM =
+  "You look at one photo of a room and list the furniture standing on the floor that will stay in the room (sofas, beds, tables, chairs, desks, dressers, shelves, cabinets, TV stands). " +
+  "Skip rugs, wall art, lamps, plants, small items and anything not touching the floor. For each piece give the point on the floor directly under its center, " +
+  "as x and y from 0 to 1000 across and down the whole image (0,0 is the top-left corner). If the bottom is hidden, estimate where the floor under its center is. " +
+  "Also estimate its width (along its front) and depth in inches from typical sizes, and whether its front faces the camera ('camera') or a side wall ('side'). Always answer by calling the found tool.";
+
+function findTool(kinds) {
+  return {
+    name: "found",
+    description: "Record the furniture on the floor in the photo. Call this exactly once (an empty list is fine).",
+    input_schema: {
+      type: "object",
+      properties: {
+        items: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              kind: { type: "string", enum: kinds },
+              x: { type: "number", description: "0-1000 across the image" },
+              y: { type: "number", description: "0-1000 down the image" },
+              width_in: { type: "number" },
+              depth_in: { type: "number" },
+              facing: { type: "string", enum: ["camera", "side"] },
+            },
+            required: ["kind", "x", "y"],
+          },
+        },
+      },
+      required: ["items"],
+    },
+  };
+}
+
+async function browseForSize(env, url) {
+  const messages = [{ role: "user", content: [{ type: "text", text: `Find the dimensions of the product at this link: ${url}` }] }];
+  const tools = [
+    { type: "web_fetch_20250910", name: "web_fetch", max_uses: 3, max_content_tokens: 30000 },
+    { type: "web_search_20250305", name: "web_search", max_uses: 3 },
+  ];
+  let data = null;
+  for (let turn = 0; turn < 3; turn++) {          // long searches can pause; let them continue twice
+    data = await callClaude(env, { max_tokens: 1500, system: BROWSE_SYSTEM, tools, messages });
+    if (data.stop_reason !== "pause_turn") break;
+    messages.push({ role: "assistant", content: data.content });
+  }
+  const texts = (data && data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  const m = texts.match(/\{[^{}]*"width_in"[^{}]*\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[0]); } catch (e) { return null; }
+}
+
 function vibeTool(styles) {
   return {
     name: "set_vibe",
@@ -89,6 +150,11 @@ export default {
       if (!/^https?:$/.test(u.protocol) || u.hostname === "localhost" || /^[\d.:\[]/.test(u.hostname) || !u.hostname.includes(".")) {
         return json({ error: "bad link" });
       }
+      const viaClaude = async (why) => {
+        const j = await browseForSize(env, u.toString()).catch(() => null);
+        if (j && j.width_in > 0 && j.depth_in > 0) return json({ ...j, via: "claude-browse" });
+        return json({ error: why === "blocked" ? "blocked" : "no size" });
+      };
       let html = "";
       try {
         const pr = await fetch(u.toString(), {
@@ -99,15 +165,30 @@ export default {
           },
           redirect: "follow",
         });
-        if (!pr.ok) return json({ error: "blocked", status: pr.status });
+        if (!pr.ok) return viaClaude("blocked");
         html = (await pr.text()).slice(0, 1500000);
-      } catch (e) { return json({ error: "blocked" }); }
+      } catch (e) { return viaClaude("blocked"); }
       const txt = pageText(html);
-      if (txt.length < 300) return json({ error: "blocked" });
+      if (txt.length < 300) return viaClaude("blocked");
       const data = await callClaude(env, { max_tokens: 400, system: SIZE_SYSTEM, messages: [{ role: "user", content: [{ type: "text", text: txt }] }] });
-      const out = data.content?.find((b) => b.type === "text")?.text;
-      if (!out) return json({ error: "no text", raw: JSON.stringify(data).slice(0, 300) });
-      return new Response(out, { headers: { ...cors, "content-type": "application/json" } });
+      const out = data.content?.find((b) => b.type === "text")?.text || "";
+      let j = null; try { j = JSON.parse((out.match(/\{[\s\S]*\}/) || [""])[0]); } catch (e) { j = null; }
+      if (j && j.width_in > 0 && j.depth_in > 0) return json(j);
+      return viaClaude("no size");     // the page loaded but didn't show its sizes as text
+    }
+
+    /* Mode 3: find furniture already standing in a room photo */
+    if (body.find) {
+      const img = typeof body.image === "string" && body.image.length < 2000000 && /^[A-Za-z0-9+/=]+$/.test(body.image) ? body.image : null;
+      if (!img) return json({ error: "no image" });
+      const kinds = (Array.isArray(body.kinds) ? body.kinds : []).filter((k) => typeof k === "string" && /^[a-z]{2,12}$/.test(k)).slice(0, 20);
+      const data = await callClaude(env, {
+        max_tokens: 1200, system: FIND_SYSTEM, tools: [findTool(kinds.length ? kinds : ["sofa", "bed", "table", "chair", "desk", "dresser", "storage", "tv", "other"])],
+        tool_choice: { type: "tool", name: "found" },
+        messages: [{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: img } }, { type: "text", text: "List the furniture on the floor." }] }],
+      });
+      const call = data.content?.find((b) => b.type === "tool_use");
+      return json(call && call.input ? call.input : { error: "no reply", raw: JSON.stringify(data).slice(0, 300) });
     }
 
     /* Mode 1: read a vibe from words and photos */

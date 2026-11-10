@@ -72,7 +72,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .pv-edge{fill:none;stroke:#FFD54A;stroke-width:2.5}
 .pv-h{cursor:grab}.pv-h circle{fill:#FFD54A;stroke:#1E2A35;stroke-width:2}.pv-h .pv-hit{fill:#FFD54A;fill-opacity:.25;stroke:none}
 .pv-h text{font:700 11px system-ui,sans-serif;text-anchor:middle;fill:#1E2A35;pointer-events:none}
-.pv-tag{pointer-events:none}.pv-tag rect{fill:#1E2A35;fill-opacity:.88;stroke:#FFD54A;stroke-width:1}
+.pv-tag{pointer-events:none}.pv-have{fill:#E9DCC4;fill-opacity:.35;stroke:#FFD54A;stroke-width:2;stroke-dasharray:6 3;pointer-events:none}.pv-mark{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;width:100%}.pv-mark .hint{flex-basis:100%;margin:0}.pv-tag rect{fill:#1E2A35;fill-opacity:.88;stroke:#FFD54A;stroke-width:1}
 .pv-tag text{font:650 12px "Archivo",system-ui,sans-serif;text-anchor:middle;fill:#fff}
 .pv-guide{position:absolute;top:12px;left:12px;width:min(290px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.18)}
 .pv-guide[hidden]{display:none}
@@ -330,6 +330,9 @@ input[type=url],input[type=text]{width:100%;background:var(--floor);border:1px s
 .storechips .idea.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}.storechips .idea.on small{color:inherit;opacity:.7}
 .storebox{margin:8px 0}
 .inapp #getApp,.inapp .appcard:not(.photocard),.inapp #printBuild{display:none !important}.storebox summary{cursor:pointer;font-weight:650;font-size:14px}
+.dragtip{margin:0 0 6px;font-size:13.5px;padding:7px 10px;border-radius:9px;background:var(--surface);border:1px solid var(--line)}.hdl{cursor:grab}
+fieldset.already h3.sub{font-size:14px;margin:14px 0 4px}
+:root{--have:#E9DCC4}@media (prefers-color-scheme:dark){:root{--have:#5A4E3C}}
 .paidbox{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;margin:10px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.paidbox>div{flex:1 1 220px;font-size:14px}.paidbox span{display:block;color:var(--muted);font-size:13px;margin-top:2px}.paidbox.hl{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset}.trackhint{margin-top:14px;font-size:12px}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}.chk input{margin-top:3px}
 .dragb{cursor:grab}.dragb:active{cursor:grabbing}
@@ -633,7 +636,7 @@ const PRODUCTS=(()=>{
 const RETAILERS=[...new Set(PRODUCTS.map(p=>p.retailer))];
 
 /* ---------- State ---------- */
-const S={step:1,room:{type:'living',wft:15,win:0,lft:13,lin:6,door:'S',window:'N',doorOff:12,cuts:[],obs:[]},vibeText:'',styleManual:null,aiWhy:'',aiMust:[],aiPics:false,aiWords:[],aiColors:[],fit:{url:'',name:'',w:null,d:null,h:null,doorW:32,doorH:80,photo:null,status:''},fitBack:false,
+const S={step:1,room:{type:'living',wft:15,win:0,lft:13,lin:6,door:'S',window:'N',doorOff:12,cuts:[],obs:[],have:[]},vibeText:'',styleManual:null,aiWhy:'',aiMust:[],aiPics:false,aiWords:[],aiColors:[],fit:{url:'',name:'',w:null,d:null,h:null,doorW:32,doorH:80,photo:null,status:''},fitBack:false,
   tier:'mid',photos:[],photoStyle:null,photoWhy:'',view:'3d',real:true,video:null,forced:{},layout:null,sel:null,dirty:true,skip:new Set(),removed:new Set(),extra:[],catTier:{},catColor:{},catMax:{},storesOff:new Set(),budgetMax:null,userForced:new Set(),budgetNote:'',xn:0};
 
 /* ---------- Helpers ---------- */
@@ -680,6 +683,23 @@ const effStyle=()=>S.styleManual||detect(S.vibeText).style||S.photoStyle||'japan
    and minus things built into it (closets, columns, fireplaces…). Each is a rectangle in room inches. ---------- */
 const OBS={closet:{label:'Closet',d:24,w:48,h:96},column:{label:'Column',d:12,w:12,h:96},fireplace:{label:'Fireplace',d:16,w:60,h:48},
   builtin:{label:'Built-in cabinet',d:16,w:48,h:84},fridge:{label:'Fridge',d:30,w:36,h:70},door:{label:'Another door',d:0,w:34,h:0},window:{label:'Another window',d:0,w:48,h:0},radiator:{label:'Radiator / heater',d:6,w:36,h:26},stairs:{label:'Stairs',d:40,w:120,h:96},other:{label:'Something else',d:18,w:24,h:36}};
+/* Furniture the person already owns and is keeping. The layout plans new pieces around it.
+   cat: the Fitroom category it stands in for, so we don't suggest a second one. */
+const HAVE={sofa:{label:'Sofa',w:84,d:36,h:34,cat:'sofa'},bed:{label:'Bed',w:64,d:84,h:40,cat:'bed'},table:{label:'Table',w:60,d:36,h:30,cat:'dtable'},
+  chair:{label:'Chair',w:30,d:32,h:34,cat:'armchair'},desk:{label:'Desk',w:48,d:24,h:30},dresser:{label:'Dresser',w:60,d:20,h:34,cat:'dresser'},
+  storage:{label:'Shelf or cabinet',w:36,d:16,h:72,cat:'shelf'},tv:{label:'TV or TV stand',w:60,d:18,h:24,cat:'tv'},coffee:{label:'Coffee table',w:44,d:24,h:18,cat:'coffee'},
+  other:{label:'Something else',w:30,d:30,h:30}};
+/* What the iPhone's LiDAR scan calls things (RoomPlan categories) */
+const HAVE_SCAN={sofa:'sofa',bed:'bed',table:'table',chair:'chair',storage:'storage',television:'tv'};
+const SCAN_NAME={refrigerator:'Fridge',stove:'Stove',oven:'Oven',sink:'Sink',washerDryer:'Washer / dryer',toilet:'Toilet',bathtub:'Bathtub',dishwasher:'Dishwasher'};
+const haveLabel=o=>'Your '+(o.label||HAVE[o.kind].label).toLowerCase();
+function addHave(kind,x,y,extra){const T=HAVE[kind]||HAVE.other,W=roomW(),L=roomL(),o=Object.assign({kind,w:T.w,d:T.d,h:T.h},extra||{});
+  o.w=Math.round(clamp(o.w,6,W));o.d=Math.round(clamp(o.d,6,L));o.x=Math.round(clamp(x-o.w/2,0,W-o.w));o.y=Math.round(clamp(y-o.d/2,0,L-o.d));
+  S.room.have.push(o);const c=T.cat;if(c&&CATS[c]&&RT().show.includes(c))S.removed.add(c);return o}
+/* after furniture is added, moved or removed: plan again, keeping the step the person is on */
+function haveChanged(){markDirty();if(S.step===3){S.layout=planLayout();S.dirty=false;S.sel=null}const y=window.scrollY,ps=panel.scrollTop;render();window.scrollTo(0,y);panel.scrollTop=ps}
+window.frAddHave=(kind,x,y,extra)=>{const o=addHave(kind,x,y,extra);haveChanged();return o};
+window.frHaveChanged=()=>haveChanged();
 const CORNERS={NW:'top-left',NE:'top-right',SW:'bottom-left',SE:'bottom-right'};
 const wallLen=w=>(w==='N'||w==='S')?roomW():roomL();
 /* A cut is a rectangle of the bounding box that is NOT part of the room. It is anchored to a
@@ -694,6 +714,8 @@ function blocks(){const W=roomW(),L=roomL(),r=S.room,out=[...cutRects()];
   (r.obs||[]).forEach((o,i)=>{const len=wallLen(o.wall),flat=o.flush||OBS[o.kind].d===0,al=clamp(o.w,4,len),dp=flat?0:clamp(o.d,2,(o.wall==='N'||o.wall==='S'?L:W)-24),off=clamp(o.off,0,len-al);
     const b={N:{x:off,y:0,w:al,h:dp},S:{x:off,y:L-dp,w:al,h:dp},W:{x:0,y:off,w:dp,h:al},E:{x:W-dp,y:off,w:dp,h:al}}[o.wall];
     out.push({kind:o.kind,label:o.flush?OBS[o.kind].label+' (set into the wall)':OBS[o.kind].label,i,wall:o.wall,flat,off,al,...b,ht:flat?0:(o.h||OBS[o.kind].h)})});
+  (r.have||[]).forEach((o,i)=>{const w=clamp(o.w,6,W),h=clamp(o.d,6,L);
+    out.push({kind:'have',hv:i,label:haveLabel(o),wall:null,flat:false,x:clamp(o.x,0,W-w),y:clamp(o.y,0,L-h),w,h,ht:o.h||30})});
   return out}
 /* Parts of a wall (as [from,to] along it) not covered by a cut-out corner or something built against it */
 function wallFree(wall){const len=wallLen(wall),W=roomW(),L=roomL(),cov=[];
@@ -751,7 +773,7 @@ function floorRects(t){const W=roomW(),L=roomL(),cs=cutRects();
   /* push the edges that sit on the bounding box out by t, so the floor runs under the walls */
   return out.map(o=>({x:o.x0<=.5?-t:o.x0, y:o.y0<=.5?-t:o.y0,
     w:(o.x1>=W-.5?W+t:o.x1)-(o.x0<=.5?-t:o.x0), h:(o.y1>=L-.5?L+t:o.y1)-(o.y0<=.5?-t:o.y0)}))}
-function floorArea(){return roomW()*roomL()-blocks().reduce((a,b)=>a+(b.kind==='lcut'||b.ht>40?b.w*b.h:0),0)}
+function floorArea(){return roomW()*roomL()-blocks().reduce((a,b)=>a+(b.kind!=='have'&&(b.kind==='lcut'||b.ht>40)?b.w*b.h:0),0)}
 function shapeKind(){const cs=S.room.cuts||[];if(!cs.length)return null;
   const W=roomW(),L=roomL(),atEnd=c=>{const len=(c.wall==='N'||c.wall==='S')?W:L;return c.off<=.5||c.off+c.w>=len-.5};
   if(cs.length===1)return atEnd(cs[0])?'L':'U';
@@ -1038,7 +1060,7 @@ function itemSVG(key,it,fs,state){
 }
 function renderPlan(){if(S.view==='3d'&&G3.ok)G3.build();else if(S.view==='photo'){window.FR_REAL&&FR_REAL.photoSync()}else renderPlan2D()}
 /* Cut-out corner drawn as solid wall (it isn't floor); built-ins hatched with their name and size */
-function blocksSVG(fs){let s='<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--muted)" stroke-width="1.2"/></pattern></defs>';
+function blocksSVG(fs){let top='',s='<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--muted)" stroke-width="1.2"/></pattern></defs>';
   for(const b of blocks()){
     if(b.kind==='lcut'){const W=roomW(),L=roomL(),x0=b.x<=0?-6:b.x,y0=b.y<=0?-6:b.y,x1=b.x+b.w>=W?W+6:b.x+b.w,y1=b.y+b.h>=L?L+6:b.y+b.h;
       s+=`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="var(--bg)"/><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="url(#hatch)" opacity=".35"/>`;
@@ -1050,6 +1072,11 @@ function blocksSVG(fs){let s='<defs><pattern id="hatch" width="6" height="6" pat
       if(b.x+b.w<W-E) seg.push([b.x+b.w,b.y,b.x+b.w,b.y+b.h]);
       for(const [ax,ay,bx,by] of seg)s+=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="var(--wall)" stroke-width="5" stroke-linecap="square"/>`;
       s+=`<text x="${b.x+b.w/2}" y="${b.y+b.h/2}" font-size="${fs*.75}" fill="var(--muted)" text-anchor="middle" dominant-baseline="central">Not part of room</text>`;continue}
+    if(b.kind==='have'){const drag=S.step!==3,cx=b.x+b.w/2,cy=b.y+b.h/2,vert=b.h>b.w*1.3,room=vert?b.h:b.w,f=Math.min(fs*.7,room*.9/(Math.max(6,b.label.length)*.55)),hs=fs*.5;
+      let g=`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="3" fill="var(--have)" fill-opacity=".6" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 2"/>`;
+      if(Math.min(b.w,b.h)>f*1.1&&f>=fs*.3)g+=`<text x="${cx}" y="${cy}" font-size="${f}" font-weight="600" fill="var(--ink)" text-anchor="middle" dominant-baseline="central"${vert?` transform="rotate(-90 ${cx} ${cy})"`:''}>${esc(b.label)}</text>`;
+      if(drag)g+=`<rect x="${b.x-4}" y="${b.y-4}" width="${b.w+8}" height="${b.h+8}" fill="transparent"/>`,top+=`<g data-hvr="${b.hv}" class="hdl"><circle cx="${b.x+b.w}" cy="${b.y+b.h}" r="${hs*2.2}" fill="transparent"/><rect x="${b.x+b.w-hs}" y="${b.y+b.h-hs}" width="${hs*2}" height="${hs*2}" rx="${hs*.4}" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/></g>`;
+      s+=`<g data-hv="${b.hv}"${drag?` class="dragb" tabindex="0" role="button" aria-label="${esc(b.label)}. Drag to move it; drag its corner square to resize it."`:''}>${g}</g>`;continue}
     const z=frontZone(b),drag=S.step!==3,hz=b.wall==='N'||b.wall==='S';let g='';
     if(z&&S.step!==4)g+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="var(--zone)"/>`;
     /* the stretch of wall it sits on, as [x1,y1,x2,y2] on the wall line */
@@ -1067,9 +1094,13 @@ function blocksSVG(fs){let s='<defs><pattern id="hatch" width="6" height="6" pat
       if(Math.min(b.w,b.h)>f*1.1&&f>=fs*.35)g+=`<text x="${cx}" y="${cy}" font-size="${f}" font-weight="600" fill="var(--ink)" text-anchor="middle" dominant-baseline="central"${vert?` transform="rotate(-90 ${cx} ${cy})"`:''}>${esc(b.label)}</text>`}
     /* an invisible, generous grab area so it can be dragged along (or onto another) wall */
     if(drag){const pad=10,h={x:Math.min(b.x,z?z.x:b.x)-(hz?0:pad),y:Math.min(b.y,z?z.y:b.y)-(hz?pad:0)};h.w=Math.max(b.x+b.w,z?z.x+z.w:0)-h.x+(hz?0:pad);h.h=Math.max(b.y+b.h,z?z.y+z.h:0)-h.y+(hz?pad:0);
-      g+=`<rect x="${h.x}" y="${h.y}" width="${Math.max(h.w,14)}" height="${Math.max(h.h,14)}" fill="transparent"/>`}
+      g+=`<rect x="${h.x}" y="${h.y}" width="${Math.max(h.w,14)}" height="${Math.max(h.h,14)}" fill="transparent"/>`;
+      /* round handles: one on the room side (how far it sticks out), one at its end (how long it is) */
+      if(!b.flat&&b.kind!=='door'&&b.kind!=='window'){const hs=fs*.5,P=(x,y,m,lab,rot)=>`<g data-bh="${b.i}:${m}" class="hdl" role="button" aria-label="${lab}"><circle cx="${x}" cy="${y}" r="${hs*2.4}" fill="transparent"/><circle cx="${x}" cy="${y}" r="${hs}" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6"/><path d="M${x-hs*.55} ${y}h${hs*1.1}" stroke="var(--accent)" stroke-width="1.3" transform="rotate(${rot} ${x} ${y})"/></g>`;
+        const dp={N:[b.x+b.w/2,b.y+b.h],S:[b.x+b.w/2,b.y],W:[b.x+b.w,b.y+b.h/2],E:[b.x,b.y+b.h/2]}[b.wall],lp=hz?[b.x+b.w,b.y+b.h/2]:[b.x+b.w/2,b.y+b.h];
+        top+=P(dp[0],dp[1],'d',`How far the ${b.label.toLowerCase()} sticks out. Drag to change it.`,hz?90:0)+P(lp[0],lp[1],'w',`How long the ${b.label.toLowerCase()} is. Drag to change it.`,hz?0:90)}}
     s+=`<g data-blk="${b.i}"${drag?` class="dragb" tabindex="0" role="button" aria-label="${esc(b.label)} on the ${WALLN[b.wall]} wall. Drag to move it."`:''}>${g}</g>`}
-  return s}
+  return s+top}
 function renderPlan2D(){
   const W=roomW(),L=roomL(),t=5,m=Math.max(30,Math.min(W,L)*.17),fs=Math.max(7,Math.min(W,L)/24);
   svg.setAttribute('viewBox',`${-m} ${-m} ${W+m+t+6} ${L+m+t+6}`);
@@ -1129,8 +1160,18 @@ ${cs.map((c,i)=>`<div class="cutrow"><div class="cuthead"><b>Missing piece ${i+1
 <div class="dim"><span>Length along that wall</span>${ftinBox('cuts.'+i+'.w',c.w,'Missing piece '+(i+1)+' length')}</div>
 <div class="dim"><span>How far it cuts into the room</span>${ftinBox('cuts.'+i+'.d',c.d,'Missing piece '+(i+1)+' depth')}</div></div>`).join('')}
 <button type="button" class="btn small" id="addCut">+ Add a missing piece</button></fieldset>`}
-function obsUI(){const os=S.room.obs;return`<fieldset><legend>Built into the room</legend>
-<p class="hint">Add closets, extra doors, a fridge, columns or a fireplace so nothing is placed in front of them. Drag them on the floor plan to move them.</p>
+function obsUI(){const os=S.room.obs,hs=S.room.have;return`<fieldset class="already"><legend>What's already in the room</legend>
+<p class="hint">Fitroom plans new furniture around everything you list here, so it never puts a sofa in front of your closet or on top of the bed you're keeping. Skip this if the room is empty.</p>
+<h3 class="sub">Furniture you're keeping</h3>
+${hs.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-hvk="${i}">${Object.entries(HAVE).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${o.kind===k&&o.label?esc(o.label):v.label}</option>`).join('')}</select></label>
+<div class="field"><span class="lbl">&nbsp;</span><button type="button" class="btn small" data-hvrot="${i}">Turn it 90°</button></div></div>
+<div class="dim"><span>Width, left to right on the plan</span>${ftinBox('have.'+i+'.w',o.w,'Width of '+haveLabel(o))}</div>
+<div class="dim"><span>Depth, top to bottom on the plan</span>${ftinBox('have.'+i+'.d',o.d,'Depth of '+haveLabel(o))}</div>
+<button type="button" class="linkbtn" data-delhave="${i}">Remove ${esc(haveLabel(o).toLowerCase())}</button></div>`).join('')}
+<button type="button" class="btn small" id="addHave">+ Add a piece you already own</button>
+<p class="hint">Drag it on the floor plan to where it really is. iPhone Pro owners: the LiDAR scan adds these for you. Have a room photo? Mark them on it in "In my photo".</p>
+<h3 class="sub">Built into the walls</h3>
+<p class="hint">Closets, extra doors, a fridge, columns, a fireplace or a radiator. Nothing gets placed in front of them.</p>
 ${os.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-obs="${i}" data-ok="kind">${Object.entries(OBS).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${v.label}</option>`).join('')}</select></label>
 <label class="field"><span class="lbl">On which wall</span><select data-obs="${i}" data-ok="wall">${wallOpts(o.wall)}</select></label></div>
 <div class="dim"><span>Starts from the ${o.wall==='N'||o.wall==='S'?'left':'top'} corner</span>${ftinBox('obs.'+i+'.off',o.off,'Starts at')}</div>
@@ -1138,7 +1179,8 @@ ${os.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span cl
 ${['closet','fridge','builtin'].includes(o.kind)?`<label class="chk"><input type="checkbox" data-obs="${i}" data-ok="flush"${o.flush?' checked':''}> Set into the wall (it doesn't stick out into the room)</label>`:''}
 ${OBS[o.kind].d===0||o.flush?'':`<div class="dim"><span>How far it sticks out</span>${ftinBox('obs.'+i+'.d',o.d,'Depth')}</div>`}
 <button type="button" class="linkbtn" data-delobs="${i}">Remove ${OBS[o.kind].label.toLowerCase()}</button></div>`).join('')}
-<button type="button" class="btn small" id="addObs">+ Add a closet, door, fridge or column</button></fieldset>`}
+<button type="button" class="btn small" id="addObs">+ Add a closet, door, fridge or column</button>
+<p class="hint">On the floor plan, drag one to move it along a wall, or onto another wall. Drag its round handles to change how far it sticks out and how long it is.</p></fieldset>`}
 function p1(){const r=S.room;return`
 <h1>Start with your room</h1>
 <p class="lede">Enter your wall lengths, or scan them with your phone. Every piece Fitroom suggests is checked against these numbers.</p>
@@ -1283,17 +1325,25 @@ function fitCheck(){
         const front=clearDir(r,OPP[wall]),gA=clearDir(r,horiz?'W':'N'),gB=clearDir(r,horiz?'E':'S'),pinch=[gA,gB].some(g=>g>1&&g<18);
         const score=Math.min(front,96)-(pinch?30:0)-Math.abs(x-(len-al)/2)*.05;
         if(!best||score>best.score)best={r,wall,front,pinch,score}}}}
+  /* the person dragged the piece somewhere: check that exact spot instead of the best one */
+  if(F.pos){const rot=F.rot?1:0,rw=rot?d:w,rh=rot?w:d;
+    if(rw<=W&&rh<=L){const r={x:clamp(F.pos.x,0,W-rw),y:clamp(F.pos.y,0,L-rh),w:rw,h:rh},ed={N:r.y,S:L-r.y-r.h,W:r.x,E:W-r.x-r.w},wall=Object.keys(ed).sort((a,b)=>ed[a]-ed[b])[0],horiz=wall==='N'||wall==='S';
+      const front=clearDir(r,OPP[wall]),gA=clearDir(r,horiz?'W':'N'),gB=clearDir(r,horiz?'E':'S');
+      const hitB=BL.find(b=>hit(r,b)),hitZ=BL.find(b=>frontZone(b)&&hit(r,frontZone(b)));
+      best={r,wall,front,pinch:[gA,gB].some(g=>g>1&&g<18),manual:true,
+        clash:hit(r,dz)?'it blocks the door swing':hitB?`it overlaps ${hitB.kind==='have'?hitB.label.toLowerCase():'the '+hitB.label.toLowerCase()}`:hitZ?`it is in the space kept clear in front of the ${hitZ.label.toLowerCase()}`:hit(r,path)?'it sits in the walkway in from the door':''}}}
   let rect=null;
   if(!best){
     const fits=(w<=W&&d<=L)||(d<=W&&w<=L);bump(2);
     lines.push({k:'no',t:'Floor space:',m:fits?`there is no spot along a wall that keeps the door swing, the first 8 ft inside the door${BL.length?' and the built-ins':''} clear.`:`it is bigger than the room (${fmt(W)} × ${fmt(L)}).`})}
   else{rect=best.r;
     const pct=Math.round(w*d/floorArea()*100),name={N:'top',S:'bottom',W:'left',E:'right'}[best.wall];
-    lines.push({k:'ok',t:'Floor space:',m:`it fits along the ${name} wall on the plan (it takes up about ${pct}% of the floor).`});
+    if(best.manual&&best.clash){bump(/walkway/.test(best.clash)?1:2);lines.push({k:/walkway/.test(best.clash)?'tight':'no',t:'Where you put it:',m:best.clash+'. Drag it somewhere else, or tap "Find the best spot".'})}
+    else lines.push({k:'ok',t:'Floor space:',m:best.manual?`it fits where you put it, nearest the ${name} wall (it takes up about ${pct}% of the floor).`:`it fits along the ${name} wall on the plan (it takes up about ${pct}% of the floor).`});
     if(best.front>=36)lines.push({k:'ok',t:'Walking space:',m:`about ${fmt(best.front)} of open floor in front of it. Designers aim for at least 30".`});
     else if(best.front>=30){bump(1);lines.push({k:'tight',t:'Walking space:',m:`${fmt(best.front)} in front of it. That works, but it is tight.`})}
     else{bump(2);lines.push({k:'no',t:'Walking space:',m:`only ${fmt(Math.max(best.front,0))} in front of it, under the 30" designers aim for.`})}
-    lines.push({k:'ok',t:'Door swing:',m:'the door swing and the first 8 ft inside the door stay clear.'});
+    if(!best.manual||!best.clash)lines.push({k:'ok',t:'Door swing:',m:'the door swing and the first 8 ft inside the door stay clear.'});
     if(best.pinch)lines.push({k:'tight',t:'Gap:',m:'it leaves a narrow gap beside it. Slide it against a wall or corner.'});
     lines.push({k:'info',t:'Measured:',m:`${inch(best.r.w)} × ${inch(best.r.h)} on the floor; ${fmt(best.front)} clear in front${best.pinch?'':`, ${fmt(clearDir(best.r,best.wall==='N'||best.wall==='S'?'W':'N'))} and ${fmt(clearDir(best.r,best.wall==='N'||best.wall==='S'?'E':'S'))} to each side`}.`})}
   const verdict=worst===0?'ok':worst===1?'tight':'no';
@@ -1302,13 +1352,14 @@ function fitResultHTML(){
   const R=fitCheck();
   if(!R)return`<p class="hint">Enter the piece's width and depth (and height if you know it) to see the result.</p>`;
   const cls={ok:'yes',tight:'tight',no:'no'}[R.verdict],head={ok:'Yes, it should fit',tight:'It fits, but it is tight',no:'No, it will not work as placed'}[R.verdict];
-  return`<div class="verdict ${cls}"><b>${head}</b><span>${esc(R.summary)}</span></div><ul class="fitlist">${R.lines.map(l=>`<li class="${l.k}"><b>${l.t}</b> ${l.m}</li>`).join('')}</ul>`}
+  return`<div class="verdict ${cls}"><b>${head}</b><span>${esc(R.summary)}</span></div><ul class="fitlist">${R.lines.map(l=>`<li class="${l.k}"><b>${l.t}</b> ${l.m}</li>`).join('')}</ul>
+${R.rect?`<p class="hint"><b>Drag the piece on the floor plan</b> to try it anywhere in the room. <button type="button" class="linkbtn" id="fitRot">Turn it 90°</button>${S.fit.pos?` · <button type="button" class="linkbtn" id="fitAuto">Find the best spot</button>`:''}</p>`:''}`}
 function fitSVG(){
   const W=roomW(),L=roomL(),dw=S.room.door,dz=doorRect(dw,W,L),pa=fitPath(W,L,dw),R=fitCheck(),fs=Math.max(7,Math.min(W,L)/24);
   let s=`<rect x="${dz.x}" y="${dz.y}" width="${dz.w}" height="${dz.h}" fill="var(--zone)"/><rect x="${pa.x}" y="${pa.y}" width="${pa.w}" height="${pa.h}" fill="none" stroke="var(--muted)" stroke-width=".8" stroke-dasharray="3 3"/>`;
   if(R&&R.rect){const r=R.rect,col=R.verdict==='no'?'#C0392B':R.verdict==='tight'?'#D39B2A':'#2E7D57',F=S.fit;
-    s+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="2" fill="${col}" fill-opacity=".3" stroke="${col}" stroke-width="1.8"/>`;
-    s+=`<text x="${r.x+r.w/2}" y="${r.y+r.h/2}" font-size="${fs}" font-weight="650" fill="var(--ink)" text-anchor="middle" dominant-baseline="central">${inch(+F.w)} × ${inch(+F.d)}</text>`}
+    s+=`<g data-fitp="1" class="dragb" tabindex="0" role="button" aria-label="The piece you're checking. Drag to try another spot."><rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="2" fill="${col}" fill-opacity=".3" stroke="${col}" stroke-width="1.8"/>`;
+    s+=`<text x="${r.x+r.w/2}" y="${r.y+r.h/2}" font-size="${fs}" font-weight="650" fill="var(--ink)" text-anchor="middle" dominant-baseline="central">${inch(r.w)} × ${inch(r.h)}</text></g>`}
   return s}
 function p4(){const F=S.fit,r=S.room,v=x=>x==null?'':x;return`
 <h1>Will it fit?</h1>
@@ -1321,6 +1372,7 @@ ${F.photo?`<img class="fitphoto" src="${F.photo}" alt="Your room photo">`:''}
 <p class="hint">The photo is kept here for reference. The fit check uses measurements, not the photo.</p></div>
 <label class="field"><span class="lbl">2. Furniture link</span><input type="url" id="fitUrl" placeholder="Paste a product link from IKEA, Article, Target…" value="${esc(F.url)}"></label>
 <div class="field"><button type="button" class="btn small" id="fitFetch">Read the size from the link</button> <span class="hint" id="fitStatus">${esc(F.status)}</span></div>
+${IN_APP&&window.FITROOM_APP.measure?`<div class="field"><span class="lbl">Or measure it</span><button type="button" class="btn small" data-measure="1">Measure it with my phone</button><p class="hint">For a piece in front of you, in a store or one you own: aim at the floor under its corners, then its top.</p></div>`:''}
 <div class="field"><span class="lbl">Size in inches</span><div class="fit3">
 <label><span class="hint">Width</span><input type="number" id="fitW" min="1" step="0.5" inputmode="decimal" value="${v(F.w)}"></label>
 <label><span class="hint">Depth</span><input type="number" id="fitD" min="1" step="0.5" inputmode="decimal" value="${v(F.d)}"></label>
@@ -1330,28 +1382,28 @@ ${F.photo?`<img class="fitphoto" src="${F.photo}" alt="Your room photo">`:''}
 <label><span class="hint">Door width</span><input type="number" id="fitDW" min="12" step="0.5" inputmode="decimal" value="${v(F.doorW)}"></label>
 <label><span class="hint">Door height</span><input type="number" id="fitDH" min="48" step="0.5" inputmode="decimal" value="${v(F.doorH)}"></label></div></div>
 <div id="fitRes">${fitResultHTML()}</div>
-<p class="hint">Checked against an empty room, with the piece against a wall. Furniture already in the room, hallways, stairs and elevators are not counted.</p>
+<p class="hint">Checked against your room, including built-ins and the furniture you're keeping (add those in <button type="button" class="linkbtn" data-go="1">step 1</button>). Hallways, stairs and elevators on the way in are not counted.</p>
 <p style="margin-top:16px"><button class="btn" data-go="2">Next: style and design</button></p>`}
 document.addEventListener('input',e=>{const id=e.target.id;if(!id||id.indexOf('fit')!==0||id==='fitPhoto')return;const F=S.fit;
   if(id==='fitUrl'){F.url=e.target.value;return}
   const key={fitW:'w',fitD:'d',fitH:'h',fitDW:'doorW',fitDH:'doorH'}[id];if(!key)return;
-  const v=parseFloat(e.target.value);F[key]=isNaN(v)?null:v;$('#fitRes').innerHTML=fitResultHTML();renderPlan();renderBar()});
+  const v=parseFloat(e.target.value);F[key]=isNaN(v)?null:v;if(key==='w'||key==='d')F.pos=null;$('#fitRes').innerHTML=fitResultHTML();renderPlan();renderBar()});
 document.addEventListener('change',e=>{if(e.target.id!=='fitPhoto'||!e.target.files[0])return;
   const rd=new FileReader();rd.onload=()=>{S.fit.photo=rd.result;render()};rd.readAsDataURL(e.target.files[0])});
 document.addEventListener('click',e=>{if(e.target.closest('#fitFetch'))fitFetch()});
 async function fitFetch(){
   const F=S.fit,u=F.url.trim(),st=$('#fitStatus'),btn=$('#fitFetch');
   if(!/^https?:\/\//i.test(u)){F.status='Paste the full link, starting with https://';st.textContent=F.status;return}
-  btn.disabled=true;st.textContent='Reading the page… this can take up to 30 seconds.';
+  btn.disabled=true;st.textContent='Claude is reading the page. If the store blocks it, Claude searches the web for the same product. This can take up to a minute.';
   let j=null;
-  try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),35000);
+  try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),90000);
     const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u}),signal:ctl.signal});clearTimeout(to);
     const raw=await r.text(),m=raw.match(/\{[\s\S]*\}/);j=m?JSON.parse(m[0]):null}catch(e){j=null}
   btn.disabled=false;if(!$('#fitFetch'))return;
-  if(!j||j.error||!(j.width_in>0&&j.depth_in>0)){F.status=(j&&j.error==='blocked'?'That store blocked the page. ':'Could not read a size from that page. ')+'Type the size from the product page below.';st.textContent=F.status;return}
+  if(!j||j.error||!(j.width_in>0&&j.depth_in>0)){F.status=(j&&j.error==='blocked'?'That store blocks outside readers, and Claude couldn\'t find this product\'s size elsewhere. ':'Claude couldn\'t find a size for that product. ')+'Type the size from the product page below.';st.textContent=F.status;return}
   const rd=x=>Math.round(x*10)/10;
   F.w=rd(j.width_in);F.d=rd(j.depth_in);F.h=j.height_in>0?rd(j.height_in):null;F.name=String(j.name||'').slice(0,80);
-  F.status='Read from the page'+(j.note?' ('+String(j.note).slice(0,120)+')':'')+'. Check it against the store page.';
+  F.status=(j.via==='claude-browse'?'Found by Claude':'Read from the page')+(j.note?' ('+String(j.note).slice(0,120)+')':'')+'. Check it against the store page.';
   st.textContent=F.status;$('#fitW').value=F.w;$('#fitD').value=F.d;$('#fitH').value=F.h==null?'':F.h;
   $('#fitRes').innerHTML=fitResultHTML();renderPlan();renderBar()}
 /* ---------- Groups of pieces in the design (a set of dining chairs is one group) ---------- */
@@ -1507,7 +1559,7 @@ function finalBuild(){let pic='';
   const gs=groups().filter(x=>!S.skip.has(x.g)),r=S.room,ww=r.window,tot=gs.reduce((a,x)=>a+x.price,0),by={};
   for(const x of gs)(by[x.p.retailer]=by[x.p.retailer]||[]).push(x);
   openDlg(`<h3>Your final build</h3>
-<p>${STYLES[S.layout.style].name} ${shapeName()}, ${fmt(roomW())} × ${fmt(roomL())}${cutsText()?` with ${cutsText()}`:''}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[r.door]} wall, ${fmt(doorA())} from the corner${ww!=='none'?`; window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').map(b=>`; ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall`).join('')}.</p>
+<p>${STYLES[S.layout.style].name} ${shapeName()}, ${fmt(roomW())} × ${fmt(roomL())}${cutsText()?` with ${cutsText()}`:''}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[r.door]} wall, ${fmt(doorA())} from the corner${ww!=='none'?`; window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').map(b=>b.wall?`; ${b.label.toLowerCase()} on the ${WALLN[b.wall]} wall`:`; ${b.label.toLowerCase()} (already in the room)`).join('')}.</p>
 ${pic}
 <table class="buildtab"><thead><tr><th>Piece</th><th>Color and finish</th><th>Size (W × D)</th><th>Price</th></tr></thead><tbody>
 ${gs.map(x=>`<tr><td><div class="bpiece">${PHOTOS[x.p.url]?`<img class="bthumb" src="${PHOTOS[x.p.url]}" alt="" loading="lazy" onerror="this.remove()">`:''}<div><b>${CATS[x.cat].label}${x.cat==='tv'?' (no TV)':''}${x.n>1?` × ${x.n}`:''}</b><br><a href="${x.p.url}" target="_blank" rel="noopener">${esc(x.p.name)}</a><br><span class="meta">${x.p.retailer} · ${TIERS[x.p.tier].label}${PHOTOS[x.p.url]?' · photo from '+x.p.retailer:''}</span></div></div></td><td>${esc(finishOf(x.p)||'as listed')}</td><td>${inch(x.p.w)} × ${inch(x.p.d)}</td><td>${money(x.price)}</td></tr>`).join('')}
@@ -1526,14 +1578,14 @@ function renderBar(){
   const W=roomW(),L=roomL(),ww=S.room.window;
   if(S.step!==3||!S.layout||!Object.keys(S.layout.items).length){
     const fv=S.step===4?fitCheck():null;
-    bar.innerHTML=(fv?`<div class="verdict ${{ok:'yes',tight:'tight',no:'no'}[fv.verdict]}"><b>${{ok:'Yes, it should fit',tight:'It fits, but it is tight',no:'No, it will not work as placed'}[fv.verdict]}</b><span>${fv.lines.filter(l=>l.k!=='ok'&&l.k!=='info').map(l=>l.t+' '+l.m).join(' ')||'Doorway, floor space and walking room all check out.'}</span></div>`:'')+(S.view==='photo'?`<p><button class="btn small primary" data-go="${S.layout&&!S.dirty?3:2}">Choose furniture for this photo</button> <span class="hint">Pick a vibe, then the pieces show up in your photo.</span></p>`:'')+`<p class="cap"><b>${fmt(W)} × ${fmt(L)}</b> ${shapeName()}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[S.room.door]} wall${ww!=='none'?`, window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').length?`, ${blocks().filter(b=>b.kind!=='lcut').map(b=>b.label.toLowerCase()).join(', ')}`:''}.</p>`;return}
+    bar.innerHTML=(fv?`<div class="verdict ${{ok:'yes',tight:'tight',no:'no'}[fv.verdict]}"><b>${{ok:'Yes, it should fit',tight:'It fits, but it is tight',no:'No, it will not work as placed'}[fv.verdict]}</b><span>${fv.lines.filter(l=>l.k!=='ok'&&l.k!=='info').map(l=>l.t+' '+l.m).join(' ')||'Doorway, floor space and walking room all check out.'}</span></div>`:'')+(S.view==='photo'?`<p><button class="btn small primary" data-go="${S.layout&&!S.dirty?3:2}">Choose furniture for this photo</button> <span class="hint">Pick a vibe, then the pieces show up in your photo.</span></p>`:'')+`${S.step===1||S.step===2?`<p class="dragtip">${S.view==='plan'?'<b>You can drag on this plan:</b> the door, built-ins and furniture you already own. Round handles change how far a built-in sticks out.':'<b>To move the door, built-ins or your own furniture,</b> switch to <button type="button" class="linkbtn" data-v="plan">Floor plan</button> and drag them.'}</p>`:S.step===4&&S.view==='plan'&&fitCheck()?'<p class="dragtip"><b>Drag the piece</b> on the plan to try it in another spot.</p>':''}<p class="cap"><b>${fmt(W)} × ${fmt(L)}</b> ${shapeName()}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[S.room.door]} wall${ww!=='none'?`, window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').length?`, ${blocks().filter(b=>b.kind!=='lcut').map(b=>b.label.toLowerCase()).join(', ')}`:''}.</p>`;return}
   const fr=$('#fitRep');if(fr)fr.innerHTML=reportHTML(fitReport());const pb=$('#paidBox');if(pb)pb.innerHTML=paidHTML();
   const c=conflicts(),it=S.sel&&S.layout.items[S.sel],sl=it?CATS[catOf(it)].label.toLowerCase():'';
   const tw=c.list.length?null:fitReport().find(l=>l.t==='Walking space'&&l.k!=='ok');
   bar.innerHTML=`<p class="status ${c.list.length?'bad':tw?'tight':'ok'}">${c.list.length?esc(c.list.join('. '))+'.':tw?`Everything fits, but walking space is tight: ${tw.m}`:'Everything fits, with the door swing and walkways clear.'}</p>
 ${it?`<p class="clr"><b>${esc(CATS[catOf(it)].label)}:</b> ${clearLine(S.sel)}</p>`:''}
 <div class="tools"><button class="btn small" id="rot" ${it?'':'disabled'}>${it?'Rotate '+sl:'Rotate'}</button>${it?`<button class="btn small" data-remove="${it.grp}">Remove ${sl}</button>`:''}<button class="btn small" id="addPiece">+ Add a piece</button><button class="btn small" id="reset">Reset layout</button></div>
-<p class="hint">${S.view==='photo'?'Drag a piece on your photo to move it.':S.view==='3d'&&G3.ok?'Drag furniture to move it; drag empty space to look around.':'Drag pieces to move them.'} Select one, then use arrow keys to nudge or R to rotate.</p>`}
+<p class="hint">${S.view==='photo'?'Drag a piece on your photo to move it.':S.view==='3d'&&G3.ok?'Drag furniture to move it; drag empty space to look around.':'Drag pieces to move them.'} Select one, then use arrow keys to nudge or R to rotate. The door, built-ins and furniture you already own stay put here; move them in <button type="button" class="linkbtn" data-go="1">step 1, Room</button>.</p>`}
 function render(){
   panel.innerHTML=S.step===1?p1():S.step===2?p2():S.step===4?p4():p3();
   document.querySelectorAll('.steps button').forEach(b=>{if(+b.dataset.go===S.step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
@@ -1559,6 +1611,12 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#addObs')){const k='closet',taken=S.room.obs.map(o=>o.wall),seg=w=>wallFree(w).sort((a,b)=>(b[1]-b[0])-(a[1]-a[0]))[0]||[0,0];
     const wall=['N','E','W','S'].filter(w=>w!==S.room.door&&!taken.includes(w)).sort((a,b)=>(seg(b)[1]-seg(b)[0])-(seg(a)[1]-seg(a)[0]))[0]||'N',[a,b]=seg(wall);
     S.room.obs.push({kind:k,wall,off:Math.max(0,Math.round((a+b-OBS[k].w)/2)),w:OBS[k].w,d:OBS[k].d,h:OBS[k].h});S.view='plan';roomChanged(true);return}
+  if(e.target.closest('#addHave')){const W=roomW(),L=roomL();addHave('sofa',W/2,L/2);S.view='plan';applyView();roomChanged(true);return}
+  const dh=e.target.closest('[data-delhave]');if(dh){S.room.have.splice(+dh.dataset.delhave,1);haveChanged();return}
+  const hr=e.target.closest('[data-hvrot]');if(hr){const o=S.room.have[+hr.dataset.hvrot];[o.w,o.d]=[o.d,o.w];o.w=Math.min(o.w,roomW());o.d=Math.min(o.d,roomL());o.x=clamp(o.x,0,roomW()-o.w);o.y=clamp(o.y,0,roomL()-o.d);haveChanged();return}
+  if(e.target.closest('[data-measure]')){appSend({type:'measure'});return}
+  if(e.target.closest('#fitRot')){S.fit.rot=S.fit.rot?0:1;if(!S.fit.pos){const R=fitCheck();if(R&&R.rect)S.fit.pos={x:R.rect.x,y:R.rect.y}}$('#fitRes').innerHTML=fitResultHTML();renderPlan();renderBar();return}
+  if(e.target.closest('#fitAuto')){S.fit.pos=null;S.fit.rot=0;$('#fitRes').innerHTML=fitResultHTML();renderPlan();renderBar();return}
   const dob=e.target.closest('[data-delobs]');if(dob){S.room.obs.splice(+dob.dataset.delobs,1);roomChanged(true);return}
   const ty=e.target.closest('[data-type]');if(ty){S.room.type=ty.dataset.type;S.extra=[];S.removed.clear();S.catTier={};S.catColor={};markDirty();document.querySelectorAll('[data-type]').forEach(b=>b.classList.toggle('on',b===ty));renderBar();return}
   const fb=e.target.closest('[data-fam]');if(fb){S.fam=fb.dataset.fam;S.famAuto=false;$('#styleBox').innerHTML=styleBox();famScroll();return}
@@ -1680,7 +1738,9 @@ document.addEventListener('change',e=>{
   if(cw){const i=+cw.dataset.cutwall,c=S.room.cuts[i];if(c){c.wall=e.target.value;c.off=0}roomChanged(true);return}
   if(e.target.dataset&&e.target.dataset.obs!=null){const o=S.room.obs[+e.target.dataset.obs];o[e.target.dataset.ok]=e.target.type==='checkbox'?e.target.checked:e.target.value;
     if(e.target.dataset.ok==='kind'){o.w=OBS[o.kind].w;o.d=OBS[o.kind].d;o.h=OBS[o.kind].h;o.flush=false}S.view='plan';roomChanged(true)}
-  if(e.target.closest&&e.target.closest('[data-fi]')){roomChanged(true);return}
+  if(e.target.dataset&&e.target.dataset.hvk!=null){const o=S.room.have[+e.target.dataset.hvk],k=e.target.value,T=HAVE[k];Object.assign(o,{kind:k,w:T.w,d:T.d,h:T.h});delete o.label;
+    if(T.cat&&CATS[T.cat]&&RT().show.includes(T.cat))S.removed.add(T.cat);haveChanged();return}
+  if(e.target.closest&&e.target.closest('[data-fi]')){if(/^have\./.test(e.target.closest('[data-fi]').dataset.fi)){haveChanged();return}roomChanged(true);return}
   if(id==='wnd'){S.room.window=e.target.value;markDirty();renderPlan();renderBar()}
   if(id==='vid'&&e.target.files[0]){S.video=e.target.files[0].name;render()}
   if(id==='roomPhoto'&&e.target.files[0]){const rd=new FileReader();rd.onload=()=>{if(!(window.FR_REAL&&FR_REAL.ok))return;S.view='photo';applyView();FR_REAL.photoSet(rd.result);if(innerWidth<=860)document.querySelector('.stage').scrollIntoView({behavior:'smooth'})};rd.readAsDataURL(e.target.files[0]);e.target.value=''}
@@ -1695,11 +1755,28 @@ function syncRows(){const g=S.sel&&S.layout.items[S.sel]?S.layout.items[S.sel].g
 /* Rooms: drag a closet, column, extra door or the main door along its wall, or onto another wall */
 let bdrag=null;
 function nearestWall(pt){const W=roomW(),L=roomL(),d={N:Math.abs(pt.y),S:Math.abs(L-pt.y),W:Math.abs(pt.x),E:Math.abs(W-pt.x)};return Object.keys(d).sort((a,b)=>d[a]-d[b])[0]}
-svg.addEventListener('pointerdown',e=>{if(S.step===3)return;const g=e.target.closest('[data-blk]');if(!g)return;
+svg.addEventListener('pointerdown',e=>{if(S.step===3)return;
+  const hd=e.target.closest('[data-bh]'),hr=e.target.closest('[data-hvr]'),hv=e.target.closest('[data-hv]'),fp=S.step===4&&e.target.closest('[data-fitp]'),pt0=toSvg(e);
+  if(hd||hr||hv||fp){
+    if(hd){const [k,mode]=hd.dataset.bh.split(':');bdrag={k,mode}}
+    else if(hr)bdrag={hvr:+hr.dataset.hvr};
+    else if(hv){const o=S.room.have[+hv.dataset.hv];bdrag={hv:+hv.dataset.hv,dx:pt0.x-o.x,dy:pt0.y-o.y}}
+    else{const R=fitCheck();if(!R||!R.rect)return;const r=R.rect;S.fit.rot=r.w===+S.fit.w?0:1;bdrag={fit:1,dx:pt0.x-r.x,dy:pt0.y-r.y}}
+    svg.setPointerCapture(e.pointerId);e.preventDefault();e.stopImmediatePropagation();return}
+  const g=e.target.closest('[data-blk]');if(!g)return;
   const pt=toSvg(e),k=g.dataset.blk;let along,start;
   if(k==='door'){const w=S.room.door;along=w==='N'||w==='S'?pt.x:pt.y;start=doorA()}else{const o=S.room.obs[+k],w=o.wall;along=w==='N'||w==='S'?pt.x:pt.y;start=o.off}
   bdrag={k,grab:along-start};svg.setPointerCapture(e.pointerId);e.preventDefault();e.stopImmediatePropagation()},true);
-svg.addEventListener('pointermove',e=>{if(!bdrag)return;const pt=toSvg(e),wall=nearestWall(pt),along=wall==='N'||wall==='S'?pt.x:pt.y,len=wallLen(wall);
+svg.addEventListener('pointermove',e=>{if(!bdrag)return;
+  if(bdrag.mode||bdrag.hv!=null||bdrag.hvr!=null||bdrag.fit){const pt=toSvg(e),W=roomW(),L=roomL();
+    if(bdrag.mode){const o=S.room.obs[+bdrag.k],hz=o.wall==='N'||o.wall==='S';
+      if(bdrag.mode==='d')o.d=Math.round(clamp({N:pt.y,S:L-pt.y,W:pt.x,E:W-pt.x}[o.wall],2,(hz?L:W)-24));
+      else o.w=Math.round(clamp((hz?pt.x:pt.y)-o.off,4,wallLen(o.wall)-o.off))}
+    else if(bdrag.hv!=null){const o=S.room.have[bdrag.hv];o.x=Math.round(clamp(pt.x-bdrag.dx,0,W-o.w));o.y=Math.round(clamp(pt.y-bdrag.dy,0,L-o.d))}
+    else if(bdrag.hvr!=null){const o=S.room.have[bdrag.hvr];o.w=Math.round(clamp(pt.x-o.x,6,W-o.x));o.d=Math.round(clamp(pt.y-o.y,6,L-o.y))}
+    else{S.fit.pos={x:Math.round(pt.x-bdrag.dx),y:Math.round(pt.y-bdrag.dy)};const fr=$('#fitRes');if(fr)fr.innerHTML=fitResultHTML()}
+    if(!bdrag.fit)markDirty();renderPlan();renderBar();e.stopImmediatePropagation();return}
+  const pt=toSvg(e),wall=nearestWall(pt),along=wall==='N'||wall==='S'?pt.x:pt.y,len=wallLen(wall);
   if(bdrag.k==='door'){S.room.door=wall;S.room.doorOff=Math.round(clamp(along-bdrag.grab,0,len-34))}
   else{const o=S.room.obs[+bdrag.k];if(o.wall!==wall)bdrag.grab=Math.min(bdrag.grab,o.w);o.wall=wall;o.off=Math.round(clamp(along-bdrag.grab,0,len-Math.min(o.w,len)))}
   markDirty();renderPlan();renderBar();e.stopImmediatePropagation()},true);
@@ -1854,7 +1931,7 @@ void main(){
       if(b.flat){if(hid[b.wall])continue;const hz=b.wall==='N'||b.wall==='S',n={N:.5,S:Ld-.5,W:.5,E:Wd-.5}[b.wall];
         for(const f of[-.25,.25]){const u=b.off+b.al/2+f*b.al;hz?add('box',T0,u,0,n,b.al/2-1.5,b.kind==='fridge'?70:80,.8,b.kind==='fridge'?'#D9DCDF':'#F1EEE8'):add('box',T0,n,0,u,.8,b.kind==='fridge'?70:80,b.al/2-1.5,b.kind==='fridge'?'#D9DCDF':'#F1EEE8')}continue}
       const near=(b.y<=.5&&hid.N)||(b.y+b.h>=Ld-.5&&hid.S)||(b.x<=.5&&hid.W)||(b.x+b.w>=Wd-.5&&hid.E);
-      const h=near?Math.min(5,b.ht):b.ht,c=b.kind==='fridge'?'#D9DCDF':b.kind==='lcut'||b.kind==='column'||b.kind==='closet'?look.wall:b.kind==='fireplace'?'#B9B2A8':b.kind==='radiator'?'#F2F1EE':b.kind==='stairs'?shade(look.floor,-.12):shade(look.floor,-.2);
+      const h=near?Math.min(5,b.ht):b.ht,c=b.kind==='have'?'#CDBFA6':b.kind==='fridge'?'#D9DCDF':b.kind==='lcut'||b.kind==='column'||b.kind==='closet'?look.wall:b.kind==='fireplace'?'#B9B2A8':b.kind==='radiator'?'#F2F1EE':b.kind==='stairs'?shade(look.floor,-.12):shade(look.floor,-.2);
       add('box',T0,b.x+b.w/2,0,b.y+b.h/2,b.w,h,b.h,c);
       if(b.kind==='closet'&&!near&&b.wall){const fz=b.wall==='N'?b.y+b.h+.3:b.wall==='S'?b.y-.3:0,fx=b.wall==='W'?b.x+b.w+.3:b.wall==='E'?b.x-.3:0,hz=b.wall==='N'||b.wall==='S';
         const along=hz?b.w:b.h;for(const f of[-.25,.25]){const u=(hz?b.x:b.y)+along/2+f*along;hz?add('box',T0,u,0,fz,along/2-1.5,80,.6,'#F1EEE8'):add('box',T0,fx,0,u,.6,80,along/2-1.5,'#F1EEE8')}}
@@ -2030,6 +2107,10 @@ if(IN_APP)document.documentElement.classList.add('inapp');
 function appSend(m){try{window.webkit.messageHandlers.fitroom.postMessage(m)}catch(e){}}
 /* Called by the app when a scan finishes. LiDAR scans include every wall, door and window as a line
    on the floor (inches, longest wall left to right, room starting at 0,0), so the real shape comes through. */
+/* Called by the app after "Measure it with my phone": a piece's size in inches */
+window.fitroomApplyMeasure=function(m){const F=S.fit,rd=x=>Math.round(x*10)/10;if(!(m&&m.w>0&&m.d>0))return;
+  F.w=rd(Math.max(m.w,m.d));F.d=rd(Math.min(m.w,m.d));F.h=m.h>0?rd(m.h):null;F.pos=null;F.rot=0;F.name=F.name||'Measured piece';
+  F.status='Measured with your phone. Phone measurements can be off by an inch or two, so measure tight spots with a tape too.';S.step=4;S.view='plan';render();window.scrollTo({top:0})};
 window.fitroomApplyScan=function(d){
   const IN=39.3701,P=d&&d.plan,r=Math.round;let W,L,note='',nd=0,nw=0;
   if(P&&P.walls&&P.walls.length>=3){
@@ -2059,6 +2140,11 @@ window.fitroomApplyScan=function(d){
     for(const x of ds.slice(1))S.room.obs.push({kind:'door',wall:x.wall,off:Math.max(0,r(x.off)),w:r(clamp(x.len,24,96)),d:0,h:0});
     S.room.window=ws.length?ws[0].wall:'none';
     for(const x of ws.slice(1))S.room.obs.push({kind:'window',wall:x.wall,off:Math.max(0,r(x.off)),w:r(clamp(x.len,12,144)),d:0,h:0});
+    /* furniture the scan found becomes "furniture you're keeping", at its real spot and size */
+    S.room.have=[];S.removed.clear();Object.assign(S.room,{wft:Math.floor(r(W)/12),win:r(W)%12,lft:Math.floor(r(L)/12),lin:r(L)%12});
+    for(const o of (P.objects||[])){if(!(o.w>6&&o.d>6)||o.category==='fireplace'||o.category==='stairs')continue;
+      const k=HAVE_SCAN[o.category]||'other';addHave(k,o.x-mx,o.y-my,{w:o.w,d:o.d,h:o.h||HAVE[k].h,...(SCAN_NAME[o.category]?{label:SCAN_NAME[o.category]}:{})})}
+    if(S.room.have.length)note+=` Found ${S.room.have.length} piece${S.room.have.length>1?'s':''} of furniture already there; check them under "What's already in the room".`;
   }else{W=d.length*IN;L=d.width*IN}
   W=clamp(r(W),72,720);L=clamp(r(L),72,720);Object.assign(S.room,{wft:Math.floor(W/12),win:W%12,lft:Math.floor(L/12),lin:L%12});
   S.scanNote=`Measured with ${d.method==='lidar'?'LiDAR':d.method==='arTap'?'your phone camera':'your numbers'}: ${fmt(W)} \u00d7 ${fmt(L)}${shapeAdj()?', '+shapeAdj().trim():''}${P?`, ${nd} door${nd===1?'':'s'} and ${nw} window${nw===1?'':'s'}`:'. Check the door and window walls below'}.`+note;
