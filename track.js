@@ -1,4 +1,5 @@
 /* Fitroom usage tracking: anonymous events for the Launchpad numbers.
+/* When you change this file, also bump ?v= on its <script> tag in index.html so browsers load the new copy right away. */
    Records actions only: never names, emails, contact details or room photos.
 
    SETUP: paste your PostHog "Project API key" (starts with phc_) below, then push.

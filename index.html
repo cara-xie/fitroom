@@ -2329,7 +2329,7 @@ render();
 document.addEventListener('change',e=>{if(e.target.id==='pvFile0'&&e.target.files[0]){const fr=new FileReader();fr.onload=()=>window.FR_REAL&&FR_REAL.photoSet(fr.result);fr.readAsDataURL(e.target.files[0]);e.target.value=''}});
 document.addEventListener('fitroom-real-ready',()=>applyView());
 </script>
-<script src="track.js"></script>
+<script src="track.js?v=3"></script>
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
 <script type="module" src="real.js"></script>
 
