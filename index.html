@@ -330,6 +330,7 @@ input[type=url],input[type=text]{width:100%;background:var(--floor);border:1px s
 .storechips .idea.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}.storechips .idea.on small{color:inherit;opacity:.7}
 .storebox{margin:8px 0}
 .inapp #getApp,.inapp .appcard:not(.photocard),.inapp #printBuild{display:none !important}.storebox summary{cursor:pointer;font-weight:650;font-size:14px}
+.paidbox{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;margin:10px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.paidbox>div{flex:1 1 220px;font-size:14px}.paidbox span{display:block;color:var(--muted);font-size:13px;margin-top:2px}.paidbox.hl{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset}.trackhint{margin-top:14px;font-size:12px}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}.chk input{margin-top:3px}
 .dragb{cursor:grab}.dragb:active{cursor:grabbing}
 #addObs{margin-top:4px}
@@ -1167,7 +1168,8 @@ ${obsUI()}
 ${appBtn('btn small')}</div>
 </details>
 <button class="btn primary wide" data-go="2">Next: choose a vibe</button>
-<button class="btn wide" data-go="4" style="margin-top:8px">Check if a piece of furniture fits</button>`}
+<button class="btn wide" data-go="4" style="margin-top:8px">Check if a piece of furniture fits</button>
+<p class="hint trackhint">Fitroom counts anonymous clicks to learn what to improve. No names, contact details or photos are recorded.</p>`}
 function detectLine(){
   if(S.styleManual&&S.aiWhy)return`Claude read your ${S.aiPics?'words and photos':'words'} as <b>${STYLES[S.styleManual].name}</b>: ${esc(S.aiWhy)}`+(S.aiWords.length?`<br>Words it noticed: ${S.aiWords.map(esc).join(', ')}.`:'')+(S.aiColors.length?`<br>Colors it saw: ${S.aiColors.map(c=>`<span title="${c}" style="display:inline-block;width:22px;height:22px;border-radius:6px;vertical-align:middle;margin-right:4px;border:1px solid rgba(0,0,0,.15);background:${c}"></span>`).join('')}`:'')+(S.aiMust.length?`<br>Pieces it suggests: ${S.aiMust.map(esc).join(', ')}.`:'');
   if(S.styleManual)return`You picked <b>${STYLES[S.styleManual].name}</b>.`;
@@ -1444,6 +1446,9 @@ function fitReport(){const L=S.layout,c=conflicts(),out=[],dw=+S.fit.doorW||32;
   if(!noD.length&&!tightD.length)out.push({k:'ok',t:'Doorway',m:`every piece should fit through a ${dw}" door.`});
   out.push({k:'info',t:'What is checked',m:`widths and depths are each store's listed size. Heights are typical for each kind of piece, so check the store page for anything tall. Room size and shape are what you entered${S.scanNote?' or scanned':''}.`});
   return out}
+/* The one paid offer: always in the fit report, highlighted when the report finds something tight or wrong. Wording and price live in track.js (PAID). */
+function paidHTML(){if(typeof PAID==='undefined')return'';const w=fitReport().filter(l=>l.k==='tight'||l.k==='no'),hl=w.length>0;
+  return`<div class="paidbox${hl?' hl':''}"><div><b>${hl?'Not sure about the '+esc(w[0].t.toLowerCase())+'?':'Want to be sure before you buy?'}</b><span>A person checks each piece against the store's listing, its shipping box and the path from your door.</span></div><button type="button" id="paidBtn" class="btn${hl?' primary hl':''}">${PAID.name}: $${PAID.price}, ${PAID.promise}</button></div>`}
 const reportHTML=rs=>`<ul class="fitlist">${rs.map(l=>`<li class="${l.k}"><b>${l.t}:</b> ${l.m}</li>`).join('')}</ul>`;
 function p3(){const L=S.layout,st=STYLES[L.style],noun=shapeName();
   if(!Object.keys(L.items).length&&!S.removed.size)return`<h1>That's a snug room</h1><p class="lede">${L.notes[0]}</p><button class="btn primary" data-go="1">Change room size</button> <button class="btn" id="addPiece">Add pieces one at a time</button>`;
@@ -1458,7 +1463,7 @@ function p3(){const L=S.layout,st=STYLES[L.style],noun=shapeName();
 ${S.budgetNote?`<p class="budgetnote${/over/.test(S.budgetNote)?' over':''}">${esc(S.budgetNote)}</p>`:''}
 <details class="storebox"${S.storesOff.size?' open':''}><summary>Stores${S.storesOff.size?` (${RETAILERS.length-S.storesOff.size} of ${RETAILERS.length})`:''}</summary>${storeChips()}</details>
 <div class="buildbar"><button class="btn" id="addPiece">+ Add a piece</button><button class="btn" id="finalBuild">See my final build</button></div>
-<h2>Fit report</h2><div id="fitRep">${reportHTML(fitReport())}</div>
+<h2>Fit report</h2><div id="fitRep">${reportHTML(fitReport())}</div><div id="paidBox">${paidHTML()}</div>
 <p class="hint">Real products from ${RETAILERS.join(', ').replace(/, ([^,]*)$/,' and $1')}, with sizes and prices as listed on each store's website on ${SRC_DATE}. Prices can change. Where a piece shows a photo, that photo comes straight from the store's own listing. The shapes in the 3D room are stand-ins built from each listing's size and color, not the store's models, so open the store page to see the real piece.</p>
 <p class="pick"><span>Check the items you want to buy.</span><span><button type="button" id="ckAll">Select all</button> &nbsp; <button type="button" id="ckNone">Clear</button></span></p>
 <div class="items">${gs.map(x=>{const {g,cat,p,n,price}=x,more=optionList(x).length-1,selG=S.sel&&L.items[S.sel]&&L.items[S.sel].grp===g,fin=finishOf(p);return`
@@ -1522,7 +1527,7 @@ function renderBar(){
   if(S.step!==3||!S.layout||!Object.keys(S.layout.items).length){
     const fv=S.step===4?fitCheck():null;
     bar.innerHTML=(fv?`<div class="verdict ${{ok:'yes',tight:'tight',no:'no'}[fv.verdict]}"><b>${{ok:'Yes, it should fit',tight:'It fits, but it is tight',no:'No, it will not work as placed'}[fv.verdict]}</b><span>${fv.lines.filter(l=>l.k!=='ok'&&l.k!=='info').map(l=>l.t+' '+l.m).join(' ')||'Doorway, floor space and walking room all check out.'}</span></div>`:'')+(S.view==='photo'?`<p><button class="btn small primary" data-go="${S.layout&&!S.dirty?3:2}">Choose furniture for this photo</button> <span class="hint">Pick a vibe, then the pieces show up in your photo.</span></p>`:'')+`<p class="cap"><b>${fmt(W)} × ${fmt(L)}</b> ${shapeName()}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[S.room.door]} wall${ww!=='none'?`, window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').length?`, ${blocks().filter(b=>b.kind!=='lcut').map(b=>b.label.toLowerCase()).join(', ')}`:''}.</p>`;return}
-  const fr=$('#fitRep');if(fr)fr.innerHTML=reportHTML(fitReport());
+  const fr=$('#fitRep');if(fr)fr.innerHTML=reportHTML(fitReport());const pb=$('#paidBox');if(pb)pb.innerHTML=paidHTML();
   const c=conflicts(),it=S.sel&&S.layout.items[S.sel],sl=it?CATS[catOf(it)].label.toLowerCase():'';
   const tw=c.list.length?null:fitReport().find(l=>l.t==='Walking space'&&l.k!=='ok');
   bar.innerHTML=`<p class="status ${c.list.length?'bad':tw?'tight':'ok'}">${c.list.length?esc(c.list.join('. '))+'.':tw?`Everything fits, but walking space is tight: ${tw.m}`:'Everything fits, with the door swing and walkways clear.'}</p>
@@ -2238,6 +2243,7 @@ render();
 document.addEventListener('change',e=>{if(e.target.id==='pvFile0'&&e.target.files[0]){const fr=new FileReader();fr.onload=()=>window.FR_REAL&&FR_REAL.photoSet(fr.result);fr.readAsDataURL(e.target.files[0]);e.target.value=''}});
 document.addEventListener('fitroom-real-ready',()=>applyView());
 </script>
+<script src="track.js"></script>
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
 <script type="module" src="real.js"></script>
 
