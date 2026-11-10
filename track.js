@@ -165,6 +165,12 @@ ${PAID_SIGNUP_URL ? `<p><a class="btn primary" id="paidSignup" href="${PAID_SIGN
   if (typeof finalBuild === 'function') { const o = finalBuild; finalBuild = function () { const r = o.apply(this, arguments); try { const { n, total } = picked(); track('final_build', { pieces_selected: n, total_price: Math.round(total) }) } catch (x) { } return r } }
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#printBuild')) track('pdf_saved', {}) }, true);
 
+  /* ---------- app only: the phone's camera tools ---------- */
+  if (typeof appSend === 'function') { const o = appSend; appSend = function (m) { try { if (m && (m.type === 'scan' || m.type === 'measure')) track('app_camera_opened', { tool: m.type === 'scan' ? 'scan room' : 'measure a piece' }) } catch (x) { } return o.apply(this, arguments) } }
+  if (window.fitroomApplyMeasure) { const o = window.fitroomApplyMeasure; window.fitroomApplyMeasure = function (m) { try { track('piece_measured', { width_in: m && m.w, depth_in: m && m.d, height_in: m && m.h }) } catch (x) { } return o.apply(this, arguments) } }
+  /* room_done already records LiDAR / camera scans; this records that a scan came back, even if they never finish step 1 */
+  if (window.fitroomApplyScan) { const o = window.fitroomApplyScan; window.fitroomApplyScan = function (d) { try { track('app_scan_done', { method: d && d.method, furniture_found: d && d.plan && d.plan.objects ? d.plan.objects.length : 0 }) } catch (x) { } return o.apply(this, arguments) } }
+
   /* If the page opened straight onto the design step, still count it. */
   if (S.step === 3) layoutMade();
 
