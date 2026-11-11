@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fitroom 3D demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#E8EBEE; --surface:#F7F8F9; --ink:#1E2A35; --muted:#5A6672; --line:#C6CDD4;
@@ -361,17 +361,146 @@ dialog h4{margin:6px 0 4px;font-size:15px}
 @media (max-width:600px){.buildtab th:nth-child(2),.buildtab td:nth-child(2){display:none}.row .opts select{max-width:100%}}
 @media print{body.printing > *:not(dialog){display:none !important}body.printing dialog{position:static;border:0;max-width:none;width:auto;box-shadow:none}
   body.printing dialog form,body.printing #printBuild{display:none}}
+/* ===== Fitroom redesign (Nov 2026): "Mint Sticker" look ===== */
+:root[data-theme="light"],:root{
+  --bg:#EFFAF4; --surface:#FFFFFF; --ink:#1F2A2E; --muted:#44545A; --line:#1F2A2E;
+  --accent:#1F2A2E; --accent-ink:#FFFFFF; --fit:#1E7A55; --warn:#B8432F;
+  --floor:#FFFFFF; --wall:#1F2A2E; --grid:rgba(31,42,46,.07); --zone:rgba(123,220,181,.22);
+  --mint:#7BDCB5; --yellow:#FFD95A; --pink:#FF9EB5; --lav:#C8B6FF; --soft:#DDF3E8; --have:#E9DCC4;
+  --sh:3px 3px 0 #1F2A2E; --bw:2.5px;
+}
+body{font-family:"Baloo 2","Archivo",system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.35;background:var(--bg)}
+h1{font-family:"Baloo 2",system-ui,sans-serif;font-stretch:100%;font-weight:800;font-size:clamp(28px,3.2vw,36px);line-height:1.05;letter-spacing:-.01em}
+h2{font-stretch:100%;font-weight:800;font-size:20px}
+.lede{font-size:17px;font-weight:600;color:var(--muted);margin:0 0 18px}
+.hint{font-size:14.5px;font-weight:500}
+.lbl,legend{font-weight:800;font-size:16px}
+.lbl .num,.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);font-style:normal;font-size:13px;margin-right:8px;vertical-align:1px}
+.lbl .opt{font-weight:600;color:var(--muted);font-size:13px;margin-left:4px}
+/* header */
+.top{background:var(--bg);border-bottom:var(--bw) solid var(--ink);padding:10px 18px}
+.brand{background:none;border:0;padding:0;cursor:pointer;font-family:"Baloo 2",sans-serif;font-stretch:100%;font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.steps{gap:2px}
+.steps button{flex-direction:column;gap:1px;padding:2px 6px;font-size:12.5px;font-weight:700;color:var(--muted);border-radius:10px}
+.steps button .n{width:30px;height:30px;border:var(--bw) solid var(--ink);background:#fff;color:var(--ink);font-size:14px;font-weight:800}
+.steps button.done .n{background:var(--mint)}
+.steps button[aria-current="step"]{background:none;color:var(--ink)}
+.steps button[aria-current="step"] .n{background:var(--yellow);color:var(--ink);border-color:var(--ink)}
+.steps button[data-go="4"] .n{border-style:solid}
+#getApp{font-size:13px}
+@media (max-width:860px){.top{justify-content:center;gap:6px}.topr{width:100%}.steps{width:100%;justify-content:space-between}.steps button{flex:1}#getApp{display:none}}
+body.home .steps{visibility:hidden;height:0;overflow:hidden}body.home .topr{display:none}
+/* panel + stage */
+.panel{background:var(--bg);border-right:var(--bw) solid var(--ink)}
+@media (max-width:860px){.panel{border-right:0}}
+.layout.s3.snugmode .stage{order:1}
+.layout.s0{grid-template-columns:1fr}.layout.s0 .stage{display:none}.layout.s0 .panel{border-right:0;min-height:calc(100vh - 70px);display:flex;justify-content:center}
+.view3d,.pv-stage{border:var(--bw) solid var(--ink);border-radius:22px;box-shadow:5px 5px 0 var(--ink)}
+/* buttons */
+.btn{border:var(--bw) solid var(--ink);background:#fff;color:var(--ink);border-radius:16px;padding:10px 16px;font-weight:800;font-size:16px;box-shadow:var(--sh)}
+.btn:hover{border-color:var(--ink);transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.primary{background:var(--mint);color:var(--ink);border-color:var(--ink)}
+.btn.small{border-radius:12px;padding:6px 11px;font-size:14px;box-shadow:2px 2px 0 var(--ink)}
+.btn.ghost{color:var(--muted)}
+.btn.big{min-height:60px;font-size:20px;border-radius:20px;box-shadow:4px 4px 0 var(--ink)}
+.btn.wide{margin-top:12px}
+.btn.dashed{border-style:dashed;box-shadow:none;background:transparent;width:100%;min-height:52px}
+.btn .ic,.choice .ic,.dragtip .ic{width:20px;height:20px;flex:none}
+.linkbtn{font-weight:800}
+.seg{border:var(--bw) solid var(--ink);border-radius:16px;background:#fff;padding:4px}
+.seg button{border-radius:11px;font-weight:800;color:var(--ink);font-size:15px}
+.seg button.on{background:var(--yellow);box-shadow:none;border:2px solid var(--ink)}
+input[type=number],input[type=url],input[type=text],select,textarea{border:var(--bw) solid var(--ink)!important;border-radius:14px!important;background:#fff;font-weight:600}
+textarea{font-size:17px;padding:10px 12px;box-shadow:var(--sh)}
+/* start screen */
+.homewrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:stretch;padding:8px 0 24px}
+.poufwrap{position:relative;align-self:center;margin-top:10px}
+.bubble{display:inline-block;background:#fff;border:var(--bw) solid var(--ink);border-radius:14px;padding:0 10px;font-weight:800;font-size:15px;transform:rotate(-3deg)}
+.poufwrap .bubble{position:absolute;right:-40px;top:0;transform:rotate(6deg)}
+.bubble.sm{font-size:13px;padding:0 8px;margin-bottom:4px}
+.homeh{text-align:center;font-size:38px;margin:10px 0 26px}
+.homebtns{display:flex;flex-direction:column;gap:16px}
+.bigbtn{display:flex;align-items:center;gap:14px;text-align:left;border:var(--bw) solid var(--ink);border-radius:22px;padding:14px 18px;box-shadow:5px 5px 0 var(--ink);cursor:pointer;color:var(--ink);font-family:inherit}
+.bigbtn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.bigbtn.mint{background:var(--mint)}.bigbtn.yellow{background:var(--yellow)}
+.bigbtn b{display:block;font-size:22px;line-height:1.1}.bigbtn small{display:block;font-size:15px;font-weight:600}
+.bico{width:50px;height:50px;flex:none;border-radius:14px;background:#fff;border:var(--bw) solid var(--ink);display:grid;place-items:center}.bico .ic{width:28px;height:28px}
+.homewrap .trackhint{text-align:center;margin-top:22px}
+/* hero + tiles */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-bottom:8px}
+.hero h1{margin:4px 0 2px}.hero .lede{margin:0}
+.tiles{display:grid;gap:10px}.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}.tiles.t2{grid-template-columns:repeat(2,minmax(0,1fr));margin:6px 0 12px}
+.tile3{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:84px;border:var(--bw) solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--sh);font-family:inherit;font-weight:800;font-size:15px;color:var(--ink);cursor:pointer;padding:8px}
+.tile3 .ic{width:30px;height:30px}
+.tile3.on{background:var(--yellow)}
+.tile3 .cnt{position:absolute;top:6px;right:6px;font-style:normal;background:var(--yellow);border:2px solid var(--ink);border-radius:99px;font-size:12px;padding:0 7px;line-height:1.4}
+.tile3.on .cnt{background:#fff}
+.scanrow.big{margin:16px 0 4px}.scanrow.big .btn{width:100%;min-height:62px;font-size:20px;border-radius:20px;box-shadow:4px 4px 0 var(--ink)}
+details.typeit,details.more,details.storebox{margin-top:14px;border:var(--bw) solid var(--ink);border-radius:18px;background:#fff;padding:10px 14px}
+details.typeit>summary,details.more>summary,details.storebox>summary{cursor:pointer;font-weight:800;font-size:16px}
+details.typeit[open]>summary,details.more[open]>summary{margin-bottom:10px}
+.roomsum{margin:-6px 0 4px;font-size:16px}
+.opencard{border:var(--bw) solid var(--ink);border-radius:18px;background:#fff;padding:12px 14px;margin-bottom:6px}
+.opencard .obs{border-color:var(--ink)}
+.dragtip.mob{display:flex;gap:8px;align-items:center;font-weight:700;font-size:14.5px;color:var(--muted)}
+@media (min-width:861px){.dragtip.mob{display:none}}
+/* vibe */
+.ideas .chips{margin:6px 0 4px}
+.idea,.chip{border:2px solid var(--ink)!important;border-radius:99px;font-weight:700;background:#fff}
+.idea.on{background:var(--mint)}
+.famtabs button[aria-selected="true"]{background:var(--yellow);border-color:var(--ink)}
+.style{border:var(--bw) solid var(--ink);border-radius:16px;box-shadow:var(--sh)}
+.style[aria-checked="true"]{background:var(--yellow);border-color:var(--ink);box-shadow:var(--sh)}
+.style small{display:none}
+.detect{border-radius:14px}
+/* design */
+.fitsum{display:flex;align-items:center;gap:10px;margin:4px 0 12px;padding:8px 12px;border:var(--bw) solid var(--ink);border-radius:16px;box-shadow:var(--sh);text-decoration:none;color:var(--ink);background:var(--mint)}
+.fitsum.tight{background:#FFF0B8}.fitsum.bad{background:#FFC9C2}
+.fitsum b{flex:1;font-size:17px}.fitsum .fsm{font-size:13px;font-weight:700}
+.fsi{width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--ink);display:grid;place-items:center;font-weight:800}
+.total{border-top:0;border-bottom:0;padding:6px 0 10px}
+.row{border:var(--bw) solid var(--ink);border-radius:18px;box-shadow:var(--sh)}
+.row.sel{background:#FFF8DC}
+.row .chip.ok{background:var(--mint)}
+details.rowopts{grid-column:1/-1}details.rowopts>summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}
+details.rowopts .why{margin:6px 0}
+.addbar{position:sticky;bottom:0;z-index:5;display:flex;gap:10px;margin:18px -4px 0;padding:12px 4px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(239,250,244,0),var(--bg) 30%)}
+.addbar .btn{min-height:58px;border-radius:18px;font-size:19px;box-shadow:4px 4px 0 var(--ink)}
+.addbar .add{flex:1;background:var(--yellow)}
+.addbar .fitjump{background:var(--mint);font-size:16px}
+.snugnote{display:flex;align-items:center;gap:10px;background:#FFF0B8;border:var(--bw) solid var(--ink);border-radius:16px;padding:6px 12px;margin:4px 0 10px}
+.snugnote p{margin:0;font-size:15px}
+.freebar{border:var(--bw) solid var(--ink);border-radius:18px;background:#fff;padding:10px 14px;margin:12px 0 14px}
+.fbtop{display:flex;justify-content:space-between;font-size:15px}
+.fbbar{height:18px;border:2px solid var(--ink);border-radius:99px;background:var(--mint);overflow:hidden;margin:6px 0}
+.fbbar i{display:block;height:100%;background:var(--lav)}
+.fbkey{display:flex;gap:14px;font-size:13px;font-weight:700;color:var(--muted)}.fbkey i{display:inline-block;width:10px;height:10px;border-radius:3px;border:1.5px solid var(--ink);margin-right:5px}.fbkey .k1{background:var(--lav)}.fbkey .k2{background:var(--mint)}
+.choice{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:10px;padding:12px 16px;border:var(--bw) solid var(--ink);border-radius:20px;background:#fff;box-shadow:var(--sh);font-family:inherit;color:var(--ink);cursor:pointer}
+.choice.yellow{background:var(--yellow);box-shadow:4px 4px 0 var(--ink)}
+.choice .ic{width:28px;height:28px}
+.choice b{display:block;font-size:18px;line-height:1.15}.choice small{display:block;font-size:14.5px;font-weight:600}
+/* fit check */
+.verdict{display:flex;gap:10px;align-items:center;border:var(--bw) solid var(--ink)!important;border-radius:18px;box-shadow:var(--sh)}
+.verdict>div{display:flex;flex-direction:column;align-items:flex-start}
+.verdict.yes{background:var(--mint)}.verdict.tight{background:#FFF0B8}.verdict.no{background:#FFC9C2}
+.verdict .pouf{flex:none}
+/* dialogs */
+dialog{border:var(--bw) solid var(--ink);border-radius:24px;box-shadow:6px 6px 0 var(--ink)}
+.addcats .idea{font-size:15px;padding:6px 12px}
+.addrow{border-radius:14px}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <div class="brand">Fitroom<span class="tag">Demo</span></div>
+  <button type="button" class="brand" data-go="0" aria-label="Fitroom home">fitroom</button>
   <div class="topr"><nav class="steps" aria-label="Steps">
-    <button data-go="1"><span class="n">1</span>Room</button>
-    <button data-go="2"><span class="n">2</span>Vibe</button>
-    <button data-go="3"><span class="n">3</span>Design</button>
-    <button data-go="4"><span class="n">4</span>Fit check</button>
+    <button data-go="1"><span class="n">1</span>Scan</button>
+    <button data-go="1b"><span class="n">2</span>Layout</button>
+    <button data-go="2"><span class="n">3</span>Vibe</button>
+    <button data-go="3"><span class="n">4</span>Design</button>
+    <button data-go="4"><span class="n">5</span>Fit check</button>
   </nav><button type="button" class="btn small" id="getApp">Get the iPhone app</button></div>
 </header>
 <main id="main" class="layout">
@@ -636,7 +765,7 @@ const PRODUCTS=(()=>{
 const RETAILERS=[...new Set(PRODUCTS.map(p=>p.retailer))];
 
 /* ---------- State ---------- */
-const S={step:1,room:{type:'living',wft:15,win:0,lft:13,lin:6,door:'S',window:'N',doorOff:12,cuts:[],obs:[],have:[]},vibeText:'',styleManual:null,aiWhy:'',aiMust:[],aiPics:false,aiWords:[],aiColors:[],fit:{url:'',name:'',w:null,d:null,h:null,doorW:32,doorH:80,photo:null,status:''},fitBack:false,
+const S={step:0,sub:'scan',snug:false,keep:{},open1b:null,room:{type:'living',wft:15,win:0,lft:13,lin:6,door:'S',window:'N',doorOff:12,cuts:[],obs:[],have:[]},vibeText:'',styleManual:null,aiWhy:'',aiMust:[],aiPics:false,aiWords:[],aiColors:[],fit:{url:'',name:'',w:null,d:null,h:null,doorW:32,doorH:80,photo:null,status:''},fitBack:false,
   tier:'mid',photos:[],photoStyle:null,photoWhy:'',view:'3d',real:true,video:null,forced:{},layout:null,sel:null,dirty:true,skip:new Set(),removed:new Set(),extra:[],catTier:{},catColor:{},catMax:{},storesOff:new Set(),budgetMax:null,userForced:new Set(),budgetNote:'',xn:0};
 
 /* ---------- Helpers ---------- */
@@ -1181,37 +1310,85 @@ ${OBS[o.kind].d===0||o.flush?'':`<div class="dim"><span>How far it sticks out</s
 <button type="button" class="linkbtn" data-delobs="${i}">Remove ${OBS[o.kind].label.toLowerCase()}</button></div>`).join('')}
 <button type="button" class="btn small" id="addObs">+ Add a closet, door, fridge or column</button>
 <p class="hint">On the floor plan, drag one to move it along a wall, or onto another wall. Drag its round handles to change how far it sticks out and how long it is.</p></fieldset>`}
+/* ---------- Poufy the mascot + small icons (redesign, Nov 2026) ---------- */
+function pouf(mood,w){const ink='#1F2A2E',h=Math.round(w*100/120);
+  const eyes=mood==='sweat'?`<path d="M41 58 l5 -3 l5 3M69 58 l5 -3 l5 3" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`:mood==='yay'?`<path d="M40 58 q6 -7 12 0M68 58 q6 -7 12 0" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`:`<circle cx="46" cy="58" r="4" fill="${ink}"/><circle cx="74" cy="58" r="4" fill="${ink}"/>`;
+  const mouth=mood==='sweat'?`<ellipse cx="60" cy="69" rx="5" ry="3.5" fill="${ink}"/>`:mood==='yay'?`<path d="M50 66 Q60 76 70 66" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`:`<path d="M54 66 Q60 71 66 66" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const extra=mood==='sweat'?`<path d="M99 30 q5 7 0 12 q-5 -5 0 -12z" fill="#8FD0F0" stroke="${ink}" stroke-width="2"/>`:mood==='scan'?`<rect x="92" y="8" width="22" height="34" rx="5" fill="#fff" stroke="${ink}" stroke-width="3"/><path d="M98 18h10M98 24h10" stroke="#7BDCB5" stroke-width="3" stroke-linecap="round"/>`:'';
+  return`<svg class="pouf" width="${w}" height="${h}" viewBox="0 0 120 100" aria-hidden="true"><ellipse cx="60" cy="94" rx="40" ry="5" fill="${ink}" opacity=".12"/><rect x="18" y="30" width="84" height="56" rx="26" fill="#FF9EB5" stroke="${ink}" stroke-width="3"/><path d="M30 44 Q60 34 90 44" stroke="${ink}" stroke-width="2.5" fill="none" opacity=".35"/>${eyes}${mouth}${mood!=='sweat'?`<circle cx="37" cy="67" r="5" fill="#FF5C86" opacity=".45"/><circle cx="83" cy="67" r="5" fill="#FF5C86" opacity=".45"/>`:''}<rect x="32" y="84" width="8" height="10" rx="3" fill="${ink}"/><rect x="80" y="84" width="8" height="10" rx="3" fill="${ink}"/>${extra}</svg>`}
+const IC=d=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICO={
+  sofa:IC('<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 17v-4a2 2 0 0 1 4 0v1h10v-1a2 2 0 0 1 4 0v4z"/>'),
+  bed:IC('<path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 15h18M6 10V7h5v3"/>'),
+  table:IC('<path d="M4 10h16M6 10v9M18 10v9M8 6h8"/>'),
+  door:IC('<path d="M5 21V4a1 1 0 0 1 1-1h9v18M3 21h16M12 12h.01M15 3l4 2v14l-4 2"/>'),
+  closet:IC('<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18M10 12h.01M14 12h.01"/>'),
+  cam:IC('<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M9 6l1.5-2h3L15 6"/>'),
+  tape:IC('<path d="M3 7h18M3 7v4M21 7v4M7 7v2M11 7v2M15 7v2M19 7v2"/><path d="M8 16l3 3 6-6"/>'),
+  scan:IC('<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3"/>'),
+  plus:IC('<path d="M12 5v14M5 12h14"/>'),
+  star:IC('<path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"/>'),
+  move:IC('<path d="M5 9l-3 3 3 3M19 9l3 3-3 3M2 12h20"/>'),
+  list:IC('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')};
+const ROOMICO={living:ICO.sofa,bedroom:ICO.bed,dining:ICO.table};
+/* Start screen: two ways in */
+function p0(){return`<div class="homewrap">
+<div class="poufwrap">${pouf('happy',190)}<span class="bubble">hi! I'm Poufy</span></div>
+<h1 class="homeh">Furniture that<br>actually fits</h1>
+<div class="homebtns">
+<button type="button" class="bigbtn mint" data-go="4" data-fitonly="1"><span class="bico">${ICO.tape}</span><span><b>Will this fit?</b><small>Paste a link, we check your room</small></span></button>
+<button type="button" class="bigbtn yellow" data-go="1"><span class="bico">${ICO.sofa}</span><span><b>Design my room</b><small>We pick pieces that fit your style</small></span></button>
+</div>
+<p class="hint trackhint">Fitroom counts anonymous clicks to get better. No names, contact details or photos.</p></div>`}
+/* Step 1: Scan */
 function p1(){const r=S.room;return`
-<h1>Start with your room</h1>
-<p class="lede">Enter your wall lengths, or scan them with your phone. Every piece Fitroom suggests is checked against these numbers.</p>
-<p class="orient"><b>Three steps:</b> your room, then your vibe, then your design. You fill things in here on the left; your room draws itself on the right as you go.</p>
-<div class="field"><span class="lbl">Room type</span><div class="seg">${Object.entries(ROOMS).map(([k,v])=>`<button type="button" data-type="${k}" class="${r.type===k?'on':''}">${v.label}</button>`).join('')}</div></div>
-<div class="scanrow">${scanBtn()}</div>
+<div class="hero">${pouf('scan',120)}<h1>Let's measure your room</h1><p class="lede">Walk around with your phone. About 1 minute.</p></div>
+<div class="field"><span class="lbl">Which room?</span><div class="tiles t3">${Object.entries(ROOMS).map(([k,v])=>`<button type="button" data-type="${k}" class="tile3${r.type===k?' on':''}">${ROOMICO[k]||''}<span>${v.label.replace(' room','')}</span></button>`).join('')}</div></div>
+<div class="scanrow big">${scanBtn()}</div>
 ${S.scanNote?`<p class="scannote">${esc(S.scanNote)}</p>`:''}
+<details class="typeit" data-keep="type"${S.keep.type?' open':''}><summary>Type the size instead</summary>
 <fieldset><legend>Wall lengths</legend>
 <div class="dim"><span>Width, left to right</span><div class="ftin"><input type="number" id="wft" min="6" max="60" value="${r.wft}" aria-label="Width feet"><i>ft</i><input type="number" id="win" min="0" max="11" value="${r.win}" aria-label="Width inches"><i>in</i></div></div>
 <div class="dim"><span>Depth, top to bottom</span><div class="ftin"><input type="number" id="lft" min="6" max="60" value="${r.lft}" aria-label="Depth feet"><i>ft</i><input type="number" id="lin" min="0" max="11" value="${r.lin}" aria-label="Depth inches"><i>in</i></div></div>
 </fieldset>
-${shapeUI()}
-<div class="two">
+${shapeUI()}</details>
+<button class="btn primary wide big" data-go="1b">Next: what's in the room</button>`}
+function haveUI(){const hs=S.room.have;return`
+${hs.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-hvk="${i}">${Object.entries(HAVE).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${o.kind===k&&o.label?esc(o.label):v.label}</option>`).join('')}</select></label>
+<div class="field"><span class="lbl">&nbsp;</span><button type="button" class="btn small" data-hvrot="${i}">Turn it 90°</button></div></div>
+<div class="dim"><span>Width (left to right)</span>${ftinBox('have.'+i+'.w',o.w,'Width of '+haveLabel(o))}</div>
+<div class="dim"><span>Depth (top to bottom)</span>${ftinBox('have.'+i+'.d',o.d,'Depth of '+haveLabel(o))}</div>
+<button type="button" class="linkbtn" data-delhave="${i}">Remove ${esc(haveLabel(o).toLowerCase())}</button></div>`).join('')}
+<button type="button" class="btn" id="addHave">${ICO.plus} Add a piece I own</button>
+<p class="hint">Then drag it on the floor plan to where it really is.</p>`}
+function builtUI(){const os=S.room.obs;return`
+${os.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-obs="${i}" data-ok="kind">${Object.entries(OBS).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${v.label}</option>`).join('')}</select></label>
+<label class="field"><span class="lbl">Which wall</span><select data-obs="${i}" data-ok="wall">${wallOpts(o.wall)}</select></label></div>
+<div class="dim"><span>From the ${o.wall==='N'||o.wall==='S'?'left':'top'} corner</span>${ftinBox('obs.'+i+'.off',o.off,'Starts at')}</div>
+<div class="dim"><span>${o.kind==='door'?'Door width':o.kind==='window'?'Window width':'Length along the wall'}</span>${ftinBox('obs.'+i+'.w',o.w,'Length along wall')}</div>
+${['closet','fridge','builtin'].includes(o.kind)?`<label class="chk"><input type="checkbox" data-obs="${i}" data-ok="flush"${o.flush?' checked':''}> Set into the wall</label>`:''}
+${OBS[o.kind].d===0||o.flush?'':`<div class="dim"><span>Sticks out</span>${ftinBox('obs.'+i+'.d',o.d,'Depth')}</div>`}
+<button type="button" class="linkbtn" data-delobs="${i}">Remove ${OBS[o.kind].label.toLowerCase()}</button></div>`).join('')}
+<button type="button" class="btn" id="addObs">${ICO.plus} Add a closet, door, fridge…</button>
+<p class="hint">Nothing gets placed in front of these. Drag them on the plan to move.</p>`}
+/* Step 2: Layout (what's already in the room) */
+function p1b(){const r=S.room,hs=r.have,os=r.obs,ph=!!(window.FR_REAL&&FR_REAL.hasPhoto&&FR_REAL.hasPhoto()),o=S.open1b,
+  T=(k,ic,l,n)=>`<button type="button" class="tile3${o===k?' on':''}" data-open="${k}" aria-expanded="${o===k}">${n?`<i class="cnt">${n}</i>`:''}${ic}<span>${l}</span></button>`;
+  return`
+<h1>What's already here?</h1>
+<p class="lede">We plan around it. Empty room? Skip!</p>
+<p class="roomsum"><b>${fmt(roomW())} × ${fmt(roomL())}</b> ${RT().noun} · <button type="button" class="linkbtn" data-go="1">change size</button></p>
+<div class="tiles t2">${T('have',ICO.bed,'My furniture',hs.length)}${T('obs',ICO.closet,'Closet & more',os.length)}${T('door',ICO.door,'Door & window','')}${T('photo',ICO.cam,'Room photo',ph?'✓':'')}</div>
+${o==='have'?`<div class="opencard">${haveUI()}</div>`:''}
+${o==='obs'?`<div class="opencard">${builtUI()}</div>`:''}
+${o==='door'?`<div class="opencard"><div class="two">
 <label class="field"><span class="lbl">Door</span><select id="door">${wallOpts(r.door)}</select></label>
-<label class="field"><span class="lbl">Main window</span><select id="wnd">${wallOpts(r.window,true)}</select></label>
-</div>
-<div class="dim"><span>Door starts this far from the ${r.door==='N'||r.door==='S'?'left':'top'} corner</span>${ftinBox('doorOff',doorA())}</div>
-${obsUI()}
-<details class="altways"><summary>Two faster ways to do this step</summary>
-<div class="appcard photocard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 16l5-5 4 4 3-3 6.5 6"/><circle cx="16.5" cy="9.5" r="1.6"/></svg>
-<b>Upload a photo of your room</b>
-<p>Stand in the doorway or a corner and take one photo where you can see the far wall touch the floor at both ends. Fitroom places the furniture you pick right into that photo at true size. Have more than one photo? Add each as another angle. Your photo stays in this browser.</p>
-<label class="btn small"><input type="file" accept="image/*" id="roomPhoto" hidden>${window.FR_REAL&&FR_REAL.hasPhoto&&FR_REAL.hasPhoto()?'Photo added. Change it':'Upload a room photo'}</label></div>
-<div class="appcard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9.5 9.5h5v5h-5z"/><path d="M11 18.5h2"/></svg>
-<b>Or use the Fitroom iPhone app</b>
-<p>The Fitroom app measures your room with the camera in about a minute. iPhone Pro models scan it automatically with LiDAR; other iPhones measure by aiming at three floor corners.</p>
-${appBtn('btn small')}</div>
-</details>
-<button class="btn primary wide" data-go="2">Next: choose a vibe</button>
-<button class="btn wide" data-go="4" style="margin-top:8px">Check if a piece of furniture fits</button>
-<p class="hint trackhint">Fitroom counts anonymous clicks to learn what to improve. No names, contact details or photos are recorded.</p>`}
+<label class="field"><span class="lbl">Main window</span><select id="wnd">${wallOpts(r.window,true)}</select></label></div>
+<div class="dim"><span>Door starts from the ${r.door==='N'||r.door==='S'?'left':'top'} corner</span>${ftinBox('doorOff',doorA())}</div></div>`:''}
+${o==='photo'?`<div class="opencard"><p class="hint" style="margin-top:0">Stand in a corner. Get the far wall touching the floor in the shot. We'll place furniture right in your photo.</p>
+<label class="btn"><input type="file" accept="image/*" id="roomPhoto" hidden>${ph?'Change my photo':'Add a room photo'}</label></div>`:''}
+<p class="dragtip mob">${ICO.move} Drag things on the floor plan below to move them.</p>
+<button class="btn primary wide big" data-go="2">Next: pick a vibe</button>`}
 function detectLine(){
   if(S.styleManual&&S.aiWhy)return`Claude read your ${S.aiPics?'words and photos':'words'} as <b>${STYLES[S.styleManual].name}</b>: ${esc(S.aiWhy)}`+(S.aiWords.length?`<br>Words it noticed: ${S.aiWords.map(esc).join(', ')}.`:'')+(S.aiColors.length?`<br>Colors it saw: ${S.aiColors.map(c=>`<span title="${c}" style="display:inline-block;width:22px;height:22px;border-radius:6px;vertical-align:middle;margin-right:4px;border:1px solid rgba(0,0,0,.15);background:${c}"></span>`).join('')}`:'')+(S.aiMust.length?`<br>Pieces it suggests: ${S.aiMust.map(esc).join(', ')}.`:'');
   if(S.styleManual)return`You picked <b>${STYLES[S.styleManual].name}</b>.`;
@@ -1249,23 +1426,22 @@ let ideaI=0;
 /* The gray example text in the box rotates every few seconds. It is only a placeholder, so typing replaces it. */
 setInterval(()=>{const t=document.getElementById('vibe');if(!t||document.activeElement===t)return;ideaI=(ideaI+1)%IDEAS.length;t.placeholder=ideaPh(ideaI)},4500);
 function p2(){const st=effStyle();setTimeout(famScroll,0);ideaI=Math.floor(Math.random()*IDEAS.length);return`
-<h1>Describe the vibe</h1>
-<p class="lede">Use your own words, pick a style, or add photos of rooms you love.</p>
-<label class="field"><span class="lbl">In your words</span><textarea id="vibe" rows="3" placeholder="${esc(ideaPh(ideaI))}">${esc(S.vibeText)}</textarea></label>
-<div class="ideas"><p class="hint">Not sure what to say? A good description mixes a <b>feeling</b>, <b>colors</b>, <b>materials</b> and a <b>place or era</b>. Tap an idea to start, then change any word.</p>
-<div class="chips">${IDEAS.map(([l],i)=>`<button type="button" class="idea" data-idea="${i}">${l}</button>`).join('')}</div></div>
-<div class="field"><button type="button" class="btn small" id="askAI">${S.photos.length?'Ask Claude to read my words and photos':'Ask Claude to read my words'}</button> <span class="hint" id="aiStatus"></span></div>
+<h1>What's your vibe?</h1>
+<label class="field"><span class="lbl"><i class="num">1</i>Say it in your words</span><textarea id="vibe" rows="2" placeholder="${esc(ideaPh(ideaI))}">${esc(S.vibeText)}</textarea></label>
+<div class="ideas"><div class="chips">${IDEAS.map(([l],i)=>`<button type="button" class="idea" data-idea="${i}">${l}</button>`).join('')}</div></div>
+<div class="field"><button type="button" class="btn small" id="askAI">${ICO.star} ${S.photos.length?'Ask Claude to read my words and photos':'Ask Claude to read it'}</button> <span class="hint" id="aiStatus"></span></div>
 <p class="detect" id="detect">${detectLine()}</p>
+<span class="lbl"><i class="num">2</i>Or tap a style</span>
 <div id="styleBox">${styleBox()}</div>
-<div class="field"><span class="lbl">Inspiration photos</span>
-<label class="btn small"><input type="file" accept="image/*" multiple id="pics" hidden>${S.photos.length?'Add more photos':'Add photos'}</label>${S.photos.length?' <button type="button" class="btn small" id="clearPics">Remove photos</button>':''}
+<div class="field"><span class="lbl"><i class="num">3</i>Inspo photos <small class="opt">optional</small></span>
+<label class="btn dashed"><input type="file" accept="image/*" multiple id="pics" hidden>${ICO.cam} ${S.photos.length?'Add more photos':'Add photos of rooms you love'}</label>${S.photos.length?' <button type="button" class="btn small" id="clearPics">Remove photos</button>':''}
 <div class="thumbs">${S.photos.map(p=>`<img src="${p}" alt="Inspiration photo">`).join('')}</div>
-<p class="hint">Furniture comes from the real catalogs of ${RETAILERS.length} US stores. Budget levels split each category into its cheapest, middle and priciest third. This demo reads style words in your browser, and the Ask Claude button sends your text to Claude to read it. Photos are only sent to Claude when you tap that button (up to 3, shrunk first); otherwise they are read for color in your browser. The full app will use AI vision to read your words and photos together.</p></div>
+${S.photos.length?'<p class="hint">Tap “Ask Claude” above so it reads your photos too.</p>':''}</div>
 <div class="field"><span class="lbl">Budget</span><div class="seg" id="tiers">${Object.entries(TIERS).map(([k,t])=>`<button type="button" data-tier="${k}" class="${S.tier===k?'on':''}">${t.label}</button>`).join('')}</div>
 <p class="hint" id="tierHint">${tierHint()}</p>
-<label class="budgetin">Or type your total budget <span class="money"><i>$</i><input type="number" id="budgetMax" min="0" step="50" inputmode="numeric" placeholder="e.g. 3000" value="${S.budgetMax||''}"></span></label></div>
-${storeChips()}
-<button class="btn primary wide" data-go="3">Design my room</button>`}
+<label class="budgetin">Or type a total <span class="money"><i>$</i><input type="number" id="budgetMax" min="0" step="50" inputmode="numeric" placeholder="e.g. 3000" value="${S.budgetMax||''}"></span></label></div>
+<details class="storebox" data-keep="stores"${S.keep.stores||S.storesOff.size?' open':''}><summary>Stores${S.storesOff.size?` (${RETAILERS.length-S.storesOff.size} of ${RETAILERS.length})`:''}</summary>${storeChips()}</details>
+<button class="btn primary wide big" data-go="3">Design my room</button>`}
 function storeChips(){return`<div class="field"><span class="lbl">Stores to shop from</span><div class="chips storechips">${RETAILERS.map(r=>{const on=!S.storesOff.has(r),n=PRODUCTS.filter(p=>p.retailer===r).length;
   return`<button type="button" class="idea${on?' on':''}" data-store="${esc(r)}" aria-pressed="${on}">${esc(r)} <small>${n}</small></button>`}).join('')}</div>
 <p class="hint">${S.storesOff.size?`Leaving out ${[...S.storesOff].join(', ')}.`:'All stores are on. Tap a store to leave it out.'}</p></div>`}
@@ -1352,7 +1528,7 @@ function fitResultHTML(){
   const R=fitCheck();
   if(!R)return`<p class="hint">Enter the piece's width and depth (and height if you know it) to see the result.</p>`;
   const cls={ok:'yes',tight:'tight',no:'no'}[R.verdict],head={ok:'Yes, it should fit',tight:'It fits, but it is tight',no:'No, it will not work as placed'}[R.verdict];
-  return`<div class="verdict ${cls}"><b>${head}</b><span>${esc(R.summary)}</span></div><ul class="fitlist">${R.lines.map(l=>`<li class="${l.k}"><b>${l.t}</b> ${l.m}</li>`).join('')}</ul>
+  return`<div class="verdict ${cls}">${pouf(R.verdict==='ok'?'yay':R.verdict==='no'?'sweat':'happy',64)}<div><span class="bubble sm">${R.verdict==='ok'?'yay, it fits!':R.verdict==='no'?'uh oh!':'hmm, a little tight'}</span><b>${head}</b><span>${esc(R.summary)}</span></div></div><ul class="fitlist">${R.lines.map(l=>`<li class="${l.k}"><b>${l.t}</b> ${l.m}</li>`).join('')}</ul>
 ${R.rect?`<p class="hint"><b>Drag the piece on the floor plan</b> to try it anywhere in the room. <button type="button" class="linkbtn" id="fitRot">Turn it 90°</button>${S.fit.pos?` · <button type="button" class="linkbtn" id="fitAuto">Find the best spot</button>`:''}</p>`:''}`}
 function fitSVG(){
   const W=roomW(),L=roomL(),dw=S.room.door,dz=doorRect(dw,W,L),pa=fitPath(W,L,dw),R=fitCheck(),fs=Math.max(7,Math.min(W,L)/24);
@@ -1362,28 +1538,28 @@ function fitSVG(){
     s+=`<text x="${r.x+r.w/2}" y="${r.y+r.h/2}" font-size="${fs}" font-weight="650" fill="var(--ink)" text-anchor="middle" dominant-baseline="central">${inch(r.w)} × ${inch(r.h)}</text></g>`}
   return s}
 function p4(){const F=S.fit,r=S.room,v=x=>x==null?'':x;return`
-<h1>Will it fit?</h1>
-<p class="lede">Add your room and a piece of furniture. Fitroom checks the doorway, the floor space and the walking room.</p>
-<div class="field"><span class="lbl">1. Your room</span>
+<h1>Will this fit?</h1>
+<p class="lede">We check the doorway, floor space and walking room.</p>
+<div class="field"><span class="lbl"><i class="num">1</i>Your room</span>
 <p class="hint" style="margin:0">${fmt(roomW())} × ${fmt(roomL())} ${RT().noun}, door on the ${WALLN[r.door]} wall.${S.scanNote?' '+esc(S.scanNote):''}</p>
 <div class="scanrow" style="margin-top:8px">${scanBtn()} <button type="button" class="btn small" data-go="1">Type the size instead</button></div>
 <div style="margin-top:8px"><label class="btn small"><input type="file" accept="image/*" id="fitPhoto" hidden>${F.photo?'Change room photo':'Add a room photo'}</label></div>
 ${F.photo?`<img class="fitphoto" src="${F.photo}" alt="Your room photo">`:''}
-<p class="hint">The photo is kept here for reference. The fit check uses measurements, not the photo.</p></div>
-<label class="field"><span class="lbl">2. Furniture link</span><input type="url" id="fitUrl" placeholder="Paste a product link from IKEA, Article, Target…" value="${esc(F.url)}"></label>
-<div class="field"><button type="button" class="btn small" id="fitFetch">Read the size from the link</button> <span class="hint" id="fitStatus">${esc(F.status)}</span></div>
-${IN_APP&&window.FITROOM_APP.measure?`<div class="field"><span class="lbl">Or measure it</span><button type="button" class="btn small" data-measure="1">Measure it with my phone</button><p class="hint">For a piece in front of you, in a store or one you own: aim at the floor under its corners, then its top.</p></div>`:''}
+</div>
+<label class="field"><span class="lbl"><i class="num">2</i>Paste a store link</span><input type="url" id="fitUrl" placeholder="ikea.com/…, article.com/…" value="${esc(F.url)}"></label>
+<div class="field"><button type="button" class="btn primary" id="fitFetch">Get its size</button> <span class="hint" id="fitStatus">${esc(F.status)}</span></div>
+${IN_APP&&window.FITROOM_APP.measure?`<div class="field"><span class="lbl">Or measure it</span><button type="button" class="btn small" data-measure="1">Measure it with my phone</button></div>`:''}
 <div class="field"><span class="lbl">Size in inches</span><div class="fit3">
 <label><span class="hint">Width</span><input type="number" id="fitW" min="1" step="0.5" inputmode="decimal" value="${v(F.w)}"></label>
 <label><span class="hint">Depth</span><input type="number" id="fitD" min="1" step="0.5" inputmode="decimal" value="${v(F.d)}"></label>
 <label><span class="hint">Height</span><input type="number" id="fitH" min="1" step="0.5" inputmode="decimal" value="${v(F.h)}"></label></div>
-<p class="hint">Check these against the store page. Sizes read from a link can be wrong.</p></div>
-<div class="field"><span class="lbl">3. Doorway (inches, the clear opening)</span><div class="fit2">
+<p class="hint">Double-check with the store page.</p></div>
+<div class="field"><span class="lbl"><i class="num">3</i>Your door (inches)</span><div class="fit2">
 <label><span class="hint">Door width</span><input type="number" id="fitDW" min="12" step="0.5" inputmode="decimal" value="${v(F.doorW)}"></label>
 <label><span class="hint">Door height</span><input type="number" id="fitDH" min="48" step="0.5" inputmode="decimal" value="${v(F.doorH)}"></label></div></div>
 <div id="fitRes">${fitResultHTML()}</div>
-<p class="hint">Checked against your room, including built-ins and the furniture you're keeping (add those in <button type="button" class="linkbtn" data-go="1">step 1</button>). Hallways, stairs and elevators on the way in are not counted.</p>
-<p style="margin-top:16px"><button class="btn" data-go="2">Next: style and design</button></p>`}
+<p class="hint">Hallways and stairs aren't counted yet.</p>
+<p style="margin-top:16px"><button class="btn" data-go="1">Design the whole room instead</button></p>`}
 document.addEventListener('input',e=>{const id=e.target.id;if(!id||id.indexOf('fit')!==0||id==='fitPhoto')return;const F=S.fit;
   if(id==='fitUrl'){F.url=e.target.value;return}
   const key={fitW:'w',fitD:'d',fitH:'h',fitDW:'doorW',fitDH:'doorH'}[id];if(!key)return;
@@ -1409,7 +1585,7 @@ async function fitFetch(){
 /* ---------- Groups of pieces in the design (a set of dining chairs is one group) ---------- */
 const PBY=Object.fromEntries(PRODUCTS.map(p=>[p.id,p]));
 function groups(){const L=S.layout,all=Object.values(L.items),out=[];
-  const one=g=>{const ks=grpKeys(g),it=L.items[ks[0]];return{g,cat:catOf(it),ks,p:it.p,n:ks.length,price:it.p.price*ks.length,added:!!it.added}};
+  const one=g=>{const ks=grpKeys(g),it=L.items[ks[0]];return{g,cat:catOf(it),ks,p:it.p,n:ks.length,price:it.p.price*ks.length,added:!!it.added,small:!!it.small}};
   for(const g of ROOMS[L.type].show)if(all.some(it=>it.grp===g))out.push(one(g));
   for(const e of S.extra)if(L.items[e.grp])out.push(one(e.grp));
   return out}
@@ -1503,41 +1679,68 @@ function paidHTML(){if(typeof PAID==='undefined')return'';const w=fitReport().fi
   return`<div class="paidbox${hl?' hl':''}"><div><b>${hl?'Not sure about the '+esc(w[0].t.toLowerCase())+'?':'Want to be sure before you buy?'}</b><span>A person checks each piece against the store's listing, its shipping box and the path from your door.</span></div><button type="button" id="paidBtn" class="btn${hl?' primary hl':''}">${PAID.name}: $${PAID.price}, ${PAID.promise}</button></div>`}
 const reportHTML=rs=>`<ul class="fitlist">${rs.map(l=>`<li class="${l.k}"><b>${l.t}:</b> ${l.m}</li>`).join('')}</ul>`;
 function p3(){const L=S.layout,st=STYLES[L.style],noun=shapeName();
-  if(!Object.keys(L.items).length&&!S.removed.size)return`<h1>That's a snug room</h1><p class="lede">${L.notes[0]}</p><button class="btn primary" data-go="1">Change room size</button> <button class="btn" id="addPiece">Add pieces one at a time</button>`;
+  if(!Object.keys(L.items).length&&!S.removed.size)return snugHTML(L);
   const gs=groups(),{n:cnt,total}=picked(),pieces=gs.reduce((a,x)=>a+x.n,0);
   const hid=Object.entries(L.hidden).filter(([k,v])=>v>0&&!S.removed.has(k)&&['sofa','rug','tv','coffee','shelf','bed','dresser','dtable','sideboard'].includes(k));
   const rem=[...S.removed].filter(g=>CATS[g]);
   return`
 <h1>Your ${st.name.toLowerCase()} ${noun}</h1>
-<p class="lede">${pieces} pieces, each checked against your ${fmt(L.W)} by ${fmt(L.L)} room. Drag any piece to move it, in 3D or on the floor plan.</p>
+${snugBanner(hid)}
+${fitSumHTML()}
 <div class="total"><div><span class="big" id="tBig">${money(total)}</span><span class="sub" id="tSub">${totSub(cnt,gs.length)}</span></div><button class="btn primary" id="buyAll" ${cnt?'':'disabled'}>${buyLbl(cnt,gs.length)}</button></div>
-<p class="hint" id="tCom">Fitroom commission at an assumed ${COMMISSION*100}% rate: ${money(total*COMMISSION)}</p>
 ${S.budgetNote?`<p class="budgetnote${/over/.test(S.budgetNote)?' over':''}">${esc(S.budgetNote)}</p>`:''}
-<details class="storebox"${S.storesOff.size?' open':''}><summary>Stores${S.storesOff.size?` (${RETAILERS.length-S.storesOff.size} of ${RETAILERS.length})`:''}</summary>${storeChips()}</details>
-<div class="buildbar"><button class="btn" id="addPiece">+ Add a piece</button><button class="btn" id="finalBuild">See my final build</button></div>
-<h2>Fit report</h2><div id="fitRep">${reportHTML(fitReport())}</div><div id="paidBox">${paidHTML()}</div>
-<p class="hint">Real products from ${RETAILERS.join(', ').replace(/, ([^,]*)$/,' and $1')}, with sizes and prices as listed on each store's website on ${SRC_DATE}. Prices can change. Where a piece shows a photo, that photo comes straight from the store's own listing. The shapes in the 3D room are stand-ins built from each listing's size and color, not the store's models, so open the store page to see the real piece.</p>
-<p class="pick"><span>Check the items you want to buy.</span><span><button type="button" id="ckAll">Select all</button> &nbsp; <button type="button" id="ckNone">Clear</button></span></p>
+<p class="pick"><span>Tick what you want to buy.</span><span><button type="button" id="ckAll">All</button> &nbsp; <button type="button" id="ckNone">None</button></span></p>
 <div class="items">${gs.map(x=>{const {g,cat,p,n,price}=x,more=optionList(x).length-1,selG=S.sel&&L.items[S.sel]&&L.items[S.sel].grp===g,fin=finishOf(p);return`
 <div class="row${selG?' sel':''}${S.skip.has(g)?' off':''}" data-row="${g}">
 <input type="checkbox" class="ck" data-ck="${g}" ${S.skip.has(g)?'':'checked'} aria-label="Buy ${esc(p.name)}">
 <div class="tile${PHOTOS[p.url]?' ph':''}" style="background:linear-gradient(160deg,${shade(colorFor(p),.82)},${shade(colorFor(p),.62)})">${PHOTOS[p.url]?`<img class="pimg" src="${PHOTOS[p.url]}" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none'">`:icon(cat,colorFor(p))}</div>
-<div><div class="nm">${esc(p.name)}${n>1?`, set of ${n}`:''}</div><div class="meta">${CATS[cat].label}${cat==='tv'?' (TV not included)':''} · ${inch(p.w)} W × ${inch(p.d)} D${cat==='lamp'?' footprint':''} · ${p.retailer}</div>${fin?`<div class="meta">Color and finish: ${esc(fin)}</div>`:''}<div class="why">${x.added?'You added this piece.':whyLine(p,g,n)}</div><div class="chips"><span class="chip ok">Fits your room</span><span class="chip">${TIERS[p.tier].label}</span><span class="chip">${STYLES[p.look].name}</span>${PHOTOS[p.url]?`<span class="chip">Photo: ${p.retailer}</span>`:''}</div></div>
+<div><div class="nm">${esc(p.name)}${n>1?`, set of ${n}`:''}</div><div class="meta">${CATS[cat].label}${cat==='tv'?' (TV not included)':''} · ${inch(p.w)} W × ${inch(p.d)} D${cat==='lamp'?' footprint':''} · ${p.retailer}</div>${fin?`<div class="meta">Color and finish: ${esc(fin)}</div>`:''}<div class="chips"><span class="chip ok">Fits</span><span class="chip">${TIERS[p.tier].label}</span>${x.small?'<span class="chip">Small-space pick</span>':''}</div></div>
 <div class="pr">${money(price)}${n>1?`<div class="meta">${n} × ${money(p.price)}</div>`:''}</div>
-${rowOptions(x)}
+<details class="rowopts"><summary>Color, budget &amp; why</summary><p class="why">${x.added?(x.small?'A small piece that fits your snug room.':'You added this piece.'):whyLine(p,g,n)}</p>${rowOptions(x)}</details>
 <div class="acts"><button class="btn small" data-swap="${g}" ${more<1?'disabled':''}>${more<1?'Only one fits here':`Swap (${more} more fit)`}</button><a class="btn small" href="${p.url}" target="_blank" rel="noopener">View at ${p.retailer}</a><button class="btn small ghost" data-remove="${g}">Remove</button></div>
 </div>`}).join('')}</div>
 ${rem.length?`<p class="hint removed">Removed: ${rem.map(g=>`${CATS[g].label} <button type="button" class="linkbtn" data-putback="${g}">put back</button>`).join(', ')}</p>`:''}
-${hid.length?`<h2>Filtered out by size</h2><ul class="notes">${hid.map(([k,v])=>`<li>${v} ${CATS[k].label.toLowerCase()} option${v>1?'s':''} in this style won't fit your room, so they aren't shown.</li>`).join('')}</ul>`:''}
-<h2>Why it's laid out this way</h2><ul class="notes">${L.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>
-<h2>Styling tips</h2><div class="pal">${Object.values(st.pal).map(c=>`<span style="background:${c}" title="${c}"></span>`).join('')}</div>
+<h2 id="fitHead">Fit report</h2><div id="fitRep">${reportHTML(fitReport())}</div><div id="paidBox">${paidHTML()}</div>
+<p class="buildbar"><button class="btn" id="finalBuild">See my final build</button></p>
+<details class="more" data-keep="why"${S.keep.why?' open':''}><summary>Why this layout + styling tips</summary>
+${hid.length?`<h3 class="sub">Left out because of size</h3><ul class="notes">${hid.map(([k,v])=>`<li>${v} ${CATS[k].label.toLowerCase()} option${v>1?'s':''} won't fit your room.</li>`).join('')}</ul>`:''}
+<h3 class="sub">Why it's laid out this way</h3><ul class="notes">${L.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>
+<h3 class="sub">Styling tips</h3><div class="pal">${Object.values(st.pal).map(c=>`<span style="background:${c}" title="${c}"></span>`).join('')}</div>
 <ul class="notes">${st.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
-<div class="marble"><b>About the 3D view</b><p>This 3D room is built from the measurements you entered, with every piece at its real width and depth. Heights are typical for each type of furniture. The iPhone app builds the same room from a camera scan and links each piece to its store page.</p></div>
-<p style="margin-top:20px"><button class="btn" data-go="2">Change the vibe</button> <button class="btn" data-go="1">Change the room</button></p>`}
+<details class="storebox"${S.storesOff.size?' open':''}><summary>Stores${S.storesOff.size?` (${RETAILERS.length-S.storesOff.size} of ${RETAILERS.length})`:''}</summary>${storeChips()}</details>
+<p class="hint">Real products from ${RETAILERS.join(', ').replace(/, ([^,]*)$/,' and $1')}. Sizes and prices as listed on each store's site on ${SRC_DATE}; prices can change. Photos come from the store's listing. 3D shapes are stand-ins at the real width and depth.</p>
+<p class="hint" id="tCom">Fitroom commission at an assumed ${COMMISSION*100}% rate: ${money(total*COMMISSION)}</p></details>
+<p style="margin-top:16px"><button class="btn" data-go="2">Change the vibe</button> <button class="btn" data-go="1b">Change the room</button></p>
+<div class="addbar"><button type="button" class="btn add" data-addfurn="1">${ICO.plus} Add furniture</button><a class="btn fitjump" href="#fitHead">Fit report</a></div>`}
+function snugFree(){const used=S.room.have.reduce((a,o)=>a+o.w*o.d,0)+S.room.obs.reduce((a,o)=>a+(o.flush||!OBS[o.kind]?0:o.w*(o.d||0)),0),all=Math.max(1,floorArea());
+  return{free:Math.max(0,all-used),used:Math.min(all,used),all}}
+function snugHTML(L){const f=snugFree(),pct=Math.round(f.used/f.all*100),own=S.room.have.length;
+  if(S.snug==='none')return`<div class="hero">${pouf('sweat',120)}<h1>Even small pieces won't fit</h1><p class="lede">There's no open floor left for new furniture. Try moving or removing something you own.</p></div>
+<button class="btn primary wide big" data-go="1b">${ICO.move} Move or remove my furniture</button><button class="btn wide" data-go="1">Check the room size</button>`;
+  return`<div class="hero">${pouf('sweat',120)}<span class="bubble">eek, it's squishy in here!</span><h1>Not much space left!</h1>
+<p class="lede">${own?'The furniture you already have takes up most of the floor, so':'This room is small, so'} regular-size pieces won't fit.</p></div>
+<div class="freebar"><div class="fbtop"><b>Free floor</b><b>about ${Math.round(f.free/144)} sq ft</b></div><div class="fbbar"><i style="width:${pct}%"></i></div><div class="fbkey"><span><i class="k1"></i>Already in the room</span><span><i class="k2"></i>Free</span></div></div>
+<button type="button" class="choice yellow" id="smallPicks">${ICO.star}<span><b>Show small-space picks</b><small>Lamps, plants, side tables, slim shelves</small></span></button>
+<button type="button" class="choice" data-go="1b">${ICO.move}<span><b>Move or remove my furniture</b><small>Back to Layout</small></span></button>
+<button type="button" class="choice" data-addfurn="1">${ICO.list}<span><b>Pick pieces myself</b><small>See what still has a spot</small></span></button>`}
+const SMALL_CATS={living:['side','lamp','plant','shelf','armchair'],bedroom:['night','lamp','plant','shelf','side'],dining:['dchair','lamp','plant','barcart','shelf']};
+function smallPicks(){const L=S.layout,st=L.style,cols=wantedColors();let n=0;
+  for(const cat of SMALL_CATS[L.type]||SMALL_CATS.living){
+    const list=PRODUCTS.filter(p=>p.cat===cat&&storeOK(p)).sort((a,b)=>a.w*a.d-b.w*b.d).slice(0,8).sort((a,b)=>fitScore(b,st,cols)-fitScore(a,st,cols));
+    for(const p of list){const spot=findSpot(p,cat);if(spot){const e={p,grp:'x'+(++S.xn),cat,r:spot.r,back:spot.back,added:true,small:true};S.extra.push(e);L.items[e.grp]=e;n++;break}}}
+  S.snug=n?'picked':'none';render();window.scrollTo({top:0});panel.scrollTop=0}
+function snugBanner(hid){const big=hid.filter(([k])=>['sofa','bed','dtable','dresser','tv','sideboard','coffee'].includes(k)).map(([k])=>CATS[k].label.toLowerCase());
+  if(S.snug==='picked')return`<div class="snugnote">${pouf('sweat',56)}<p><b>Snug room!</b> Regular-size pieces don't fit, so these are small ones that do.</p></div>`;
+  if(big.length)return`<div class="snugnote">${pouf('sweat',56)}<p><b>Snug room!</b> No ${big.join(' or ')} fits, so we left ${big.length>1?'them':'it'} out.</p></div>`;
+  return''}
+function fitSumHTML(){const c=conflicts(),tw=c.list.length?null:fitReport().find(l=>l.t==='Walking space'&&l.k!=='ok'),
+  k=c.list.length?'bad':tw?'tight':'ok',t=c.list.length?'Something overlaps':tw?'Fits, but walking space is tight':'Everything fits';
+  return`<a class="fitsum ${k}" id="fitSum" href="#fitHead"><span class="fsi">${k==='ok'?'✓':'!'}</span><b>${t}</b><span class="fsm">See fit report</span></a>`}
+
 /* ---------- Add a piece ---------- */
 const ADD_GROUPS=[['Seating',['sofa','armchair','dchair','bench']],['Tables',['coffee','side','dtable','night']],['Storage and shelving',['shelf','dresser','sideboard','tv','barcart']],['Beds',['bed']],['Lighting',['lamp']],['Rugs and plants',['rug','plant']]];
 function addDlg(cat){const st=S.layout.style,cols=wantedColors();
-  let h=`<h3>Add a piece</h3><p>Pick a kind of furniture. Fitroom finds an open spot for it in your room.</p><div class="addcats">${ADD_GROUPS.map(([l,cs])=>`<div><span class="lbl">${l}</span><div class="chips">${cs.map(c=>`<button type="button" class="idea${c===cat?' on':''}" data-addcat="${c}">${CATS[c].label}</button>`).join('')}</div></div>`).join('')}</div>`;
+  let h=`<h3>Add furniture</h3><p>Tap one. We find a piece with an open spot.</p><div class="addcats">${ADD_GROUPS.map(([l,cs])=>`<div><span class="lbl">${l}</span><div class="chips">${cs.map(c=>`<button type="button" class="idea${c===cat?' on':''}" data-addcat="${c}">${CATS[c].label}</button>`).join('')}</div></div>`).join('')}</div>`;
   if(cat){const TI={value:0,mid:1,premium:2},list=PRODUCTS.filter(p=>p.cat===cat&&storeOK(p)).map(p=>({p,spot:findSpot(p,cat)}))
       .sort((a,b)=>(!!b.spot-!!a.spot)||(fitScore(b.p,st,cols)-fitScore(a.p,st,cols))||(Math.abs(TI[a.p.tier]-TI[S.tier])-Math.abs(TI[b.p.tier]-TI[S.tier]))||a.p.price-b.p.price);
     const nfit=list.filter(x=>x.spot).length;
@@ -1579,29 +1782,31 @@ function renderBar(){
   if(S.step!==3||!S.layout||!Object.keys(S.layout.items).length){
     const fv=S.step===4?fitCheck():null;
     bar.innerHTML=(fv?`<div class="verdict ${{ok:'yes',tight:'tight',no:'no'}[fv.verdict]}"><b>${{ok:'Yes, it should fit',tight:'It fits, but it is tight',no:'No, it will not work as placed'}[fv.verdict]}</b><span>${fv.lines.filter(l=>l.k!=='ok'&&l.k!=='info').map(l=>l.t+' '+l.m).join(' ')||'Doorway, floor space and walking room all check out.'}</span></div>`:'')+(S.view==='photo'?`<p><button class="btn small primary" data-go="${S.layout&&!S.dirty?3:2}">Choose furniture for this photo</button> <span class="hint">Pick a vibe, then the pieces show up in your photo.</span></p>`:'')+`${S.step===1||S.step===2?`<p class="dragtip">${S.view==='plan'?'<b>You can drag on this plan:</b> the door, built-ins and furniture you already own. Round handles change how far a built-in sticks out.':'<b>To move the door, built-ins or your own furniture,</b> switch to <button type="button" class="linkbtn" data-v="plan">Floor plan</button> and drag them.'}</p>`:S.step===4&&S.view==='plan'&&fitCheck()?'<p class="dragtip"><b>Drag the piece</b> on the plan to try it in another spot.</p>':''}<p class="cap"><b>${fmt(W)} × ${fmt(L)}</b> ${shapeName()}, about ${Math.round(floorArea()/144)} sq ft. Door on the ${WALLN[S.room.door]} wall${ww!=='none'?`, window on the ${WALLN[ww]} wall`:''}${blocks().filter(b=>b.kind!=='lcut').length?`, ${blocks().filter(b=>b.kind!=='lcut').map(b=>b.label.toLowerCase()).join(', ')}`:''}.</p>`;return}
-  const fr=$('#fitRep');if(fr)fr.innerHTML=reportHTML(fitReport());const pb=$('#paidBox');if(pb)pb.innerHTML=paidHTML();
+  const fr=$('#fitRep');if(fr)fr.innerHTML=reportHTML(fitReport());const pb=$('#paidBox');if(pb)pb.innerHTML=paidHTML();const fsu=$('#fitSum');if(fsu)fsu.outerHTML=fitSumHTML();
   const c=conflicts(),it=S.sel&&S.layout.items[S.sel],sl=it?CATS[catOf(it)].label.toLowerCase():'';
   const tw=c.list.length?null:fitReport().find(l=>l.t==='Walking space'&&l.k!=='ok');
   bar.innerHTML=`<p class="status ${c.list.length?'bad':tw?'tight':'ok'}">${c.list.length?esc(c.list.join('. '))+'.':tw?`Everything fits, but walking space is tight: ${tw.m}`:'Everything fits, with the door swing and walkways clear.'}</p>
 ${it?`<p class="clr"><b>${esc(CATS[catOf(it)].label)}:</b> ${clearLine(S.sel)}</p>`:''}
-<div class="tools"><button class="btn small" id="rot" ${it?'':'disabled'}>${it?'Rotate '+sl:'Rotate'}</button>${it?`<button class="btn small" data-remove="${it.grp}">Remove ${sl}</button>`:''}<button class="btn small" id="addPiece">+ Add a piece</button><button class="btn small" id="reset">Reset layout</button></div>
-<p class="hint">${S.view==='photo'?'Drag a piece on your photo to move it.':S.view==='3d'&&G3.ok?'Drag furniture to move it; drag empty space to look around.':'Drag pieces to move them.'} Select one, then use arrow keys to nudge or R to rotate. The door, built-ins and furniture you already own stay put here; move them in <button type="button" class="linkbtn" data-go="1">step 1, Room</button>.</p>`}
+<div class="tools"><button class="btn small" id="rot" ${it?'':'disabled'}>${it?'Rotate '+sl:'Rotate'}</button>${it?`<button class="btn small" data-remove="${it.grp}">Remove ${sl}</button>`:''}<button class="btn small" data-addfurn="1">+ Add furniture</button><button class="btn small" id="reset">Reset layout</button></div>
+<p class="hint">${S.view==='photo'?'Drag a piece on your photo to move it.':S.view==='3d'&&G3.ok?'Drag furniture to move it; drag empty space to look around.':'Drag pieces to move them.'} Select one, then use arrow keys to nudge or R to rotate. The door, built-ins and furniture you already own stay put here; move them in <button type="button" class="linkbtn" data-go="1b">step 2, Layout</button>.</p>`}
 function render(){
-  panel.innerHTML=S.step===1?p1():S.step===2?p2():S.step===4?p4():p3();
-  document.querySelectorAll('.steps button').forEach(b=>{if(+b.dataset.go===S.step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
-  $('#main').classList.toggle('s3',S.step===3);
+  panel.innerHTML=S.step===0?p0():S.step===1?(S.sub==='layout'?p1b():p1()):S.step===2?p2():S.step===4?p4():p3();
+  const cur=S.step===1&&S.sub==='layout'?'1b':String(S.step),order=['1','1b','2','3','4'],ci=order.indexOf(cur);
+  document.querySelectorAll('.steps button').forEach(b=>{const i=order.indexOf(b.dataset.go);b.classList.toggle('done',ci>i&&S.step!==4);if(b.dataset.go===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+  $('#main').classList.toggle('s3',S.step===3);$('#main').classList.toggle('s0',S.step===0);$('#main').classList.toggle('snugmode',S.step===3&&!!S.layout&&!Object.keys(S.layout.items).length);document.body.classList.toggle('home',S.step===0);
   applyView();renderBar();
 }
 function go(n){
-  if(n===3&&(S.dirty||!S.layout)){S.layout=planLayout();S.sel=null;S.dirty=false;S.skip.clear()}
+  if(n===3&&(S.dirty||!S.layout)){S.layout=planLayout();S.sel=null;S.dirty=false;S.skip.clear();S.snug=false}
   if(n===4)S.view='plan';
   S.step=n;render();window.scrollTo({top:0});panel.scrollTop=0;
 }
 function markDirty(){S.dirty=true;S.forced={};S.userForced.clear()}
 
 /* ---------- Events ---------- */
+document.addEventListener('toggle',e=>{const k=e.target&&e.target.dataset&&e.target.dataset.keep;if(k)S.keep[k]=e.target.open},true);
 document.addEventListener('click',e=>{
-  const g=e.target.closest('[data-go]');if(g){go(+g.dataset.go);return}
+  const g=e.target.closest('[data-go]');if(g){const v=g.dataset.go;if(v==='1b'){S.sub='layout';if(S.view==='3d')S.view='plan';go(1)}else{if(v==='1')S.sub='scan';go(+v)}return}
   const idea=e.target.closest('[data-idea]');if(idea){const t=$('#vibe');if(t){t.value=IDEAS[+idea.dataset.idea][1];t.dispatchEvent(new Event('input',{bubbles:true}));t.focus();t.setSelectionRange(t.value.length,t.value.length)}return}
   const sh=e.target.closest('[data-shape]');if(sh){S.room.cuts=presetCuts(sh.dataset.shape);roomChanged(true);return}
   const rc=e.target.closest('[data-rmcut]');if(rc){S.room.cuts.splice(+rc.dataset.rmcut,1);roomChanged(true);return}
@@ -1657,7 +1862,9 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-snap]')){window.FR_REAL&&FR_REAL.snap3d();return}
   if(e.target.closest('#clearPics')){S.photos=[];S.photoStyle=null;S.photoWhy='';markDirty();render();return}
   if(e.target.closest('#reset')){S.layout=planLayout();S.sel=null;render();return}
-  if(e.target.closest('#addPiece')){addDlg(null);return}
+  if(e.target.closest('#addPiece')||e.target.closest('[data-addfurn]')){addDlg(null);return}
+  if(e.target.closest('#smallPicks')){smallPicks();return}
+  const op=e.target.closest('[data-open]');if(op){S.open1b=S.open1b===op.dataset.open?null:op.dataset.open;const y=window.scrollY,ps=panel.scrollTop;render();window.scrollTo(0,y);panel.scrollTop=ps;return}
   const stb=e.target.closest('[data-store]');if(stb){const r=stb.dataset.store;if(S.storesOff.has(r))S.storesOff.delete(r);else if(S.storesOff.size<RETAILERS.length-1)S.storesOff.add(r);
     markDirty();if(S.step===3){S.layout=planLayout();S.dirty=false;S.sel=null}const y=window.scrollY,ps=panel.scrollTop;render();window.scrollTo(0,y);panel.scrollTop=ps;return}
   const ac=e.target.closest('[data-addcat]');if(ac){addDlg(ac.dataset.addcat);$('#dlg').classList.add('wide');return}
@@ -2148,7 +2355,7 @@ window.fitroomApplyScan=function(d){
   }else{W=d.length*IN;L=d.width*IN}
   W=clamp(r(W),72,720);L=clamp(r(L),72,720);Object.assign(S.room,{wft:Math.floor(W/12),win:W%12,lft:Math.floor(L/12),lin:L%12});
   S.scanNote=`Measured with ${d.method==='lidar'?'LiDAR':d.method==='arTap'?'your phone camera':'your numbers'}: ${fmt(W)} \u00d7 ${fmt(L)}${shapeAdj()?', '+shapeAdj().trim():''}${P?`, ${nd} door${nd===1?'':'s'} and ${nw} window${nw===1?'':'s'}`:'. Check the door and window walls below'}.`+note;
-  markDirty();S.extra=[];S.step=S.fitBack?4:1;S.fitBack=false;S.view='plan';render();window.scrollTo({top:0});panel.scrollTop=0};
+  markDirty();S.extra=[];if(!S.fitBack)S.sub='layout';S.step=S.fitBack?4:1;S.fitBack=false;S.view='plan';render();window.scrollTo({top:0});panel.scrollTop=0};
 function scanBtn(){
   if(IN_APP&&window.FITROOM_APP.scan)return`<button type="button" class="btn primary" data-nscan="1">${window.FITROOM_APP.lidar?'Scan my room (LiDAR)':'Measure my room with the camera'}</button>`;
   if(CAN_SCAN_HERE&&ON_PHONE)return`<button type="button" class="btn primary" data-scan="1">Scan my room with the camera</button>`;
@@ -2311,7 +2518,7 @@ function scanUse(){if(SC.len==null||SC.wid==null)return;
   const a=Math.round(Math.max(SC.len,SC.wid)*39.3701),b=Math.round(Math.min(SC.len,SC.wid)*39.3701),cl=i=>clamp(i,72,720);
   const W=cl(a),L=cl(b);Object.assign(S.room,{wft:Math.floor(W/12),win:W%12,lft:Math.floor(L/12),lin:L%12});
   S.scanNote=`Measured with your phone: ${fmt(W)} by ${fmt(L)}. Check the door and window walls below.`;
-  markDirty();stopScan();S.step=S.fitBack?4:1;S.fitBack=false;render();window.scrollTo({top:0})}
+  markDirty();stopScan();if(!S.fitBack)S.sub='layout';S.step=S.fitBack?4:1;S.fitBack=false;render();window.scrollTo({top:0})}
 
 /* ---------- View switching ---------- */
 document.addEventListener('fitroom-photo',()=>{if(S.step===1)render()});
