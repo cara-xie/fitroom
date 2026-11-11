@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+<script>(function(){var m=location.search.match(/[?&]look=(\w+)/);if(m){if(/^pro/.test(m[1]))document.documentElement.classList.add("pro");if(m[1]==="pro2")document.documentElement.classList.add("pal2")}})()</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fitroom 3D demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#E8EBEE; --surface:#F7F8F9; --ink:#1E2A35; --muted:#5A6672; --line:#C6CDD4;
@@ -497,6 +498,86 @@ details.rowopts .why{margin:6px 0}
 dialog{border:var(--bw) solid var(--ink);border-radius:24px;box-shadow:6px 6px 0 var(--ink)}
 .addcats .idea{font-size:15px;padding:6px 12px}
 .addrow{border-radius:14px}
+/* ===== Polished look (html.pro): cute + vibrant, but clean like Canva ===== */
+html.pro[data-theme]{--bg:#F6F7FB;--surface:#FFFFFF;--ink:#1B2232;--muted:#5A6378;--line:#E3E6EE;--card:0 1px 2px rgba(27,34,50,.05),0 6px 18px rgba(27,34,50,.07);
+  --p1:#7B5CFA;--p2:#00B8C4;--pt:#FFFFFF;--soft1:#EFEAFF;--soft2:#E2F7F6;--soft3:#FFF3D6;--soft4:#FFE7EF;--okbg:#E3F7EE;--ok:#127A55;--tightbg:#FFF4D6;--badbg:#FFE5E2;--zone:rgba(123,92,250,.10)}
+html.pro.pal2[data-theme]{--p1:#10B981;--p2:#14B8A6;--soft1:#E3F8F0;--soft2:#FFE9E4;--soft3:#FFF3D6;--soft4:#FFE7EF;--zone:rgba(16,185,129,.12)}
+html.pro body{font-family:"Plus Jakarta Sans","Baloo 2",system-ui,sans-serif;font-size:16px;line-height:1.45;background:var(--bg)}
+html.pro h1{font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;letter-spacing:-.025em;font-size:clamp(26px,3vw,34px);line-height:1.12}
+html.pro h2,html.pro .lbl,html.pro legend{font-weight:700}
+html.pro .lede{font-weight:500;font-size:16px}
+html.pro .top{background:#fff;border-bottom:1px solid var(--line)}
+html.pro .brand{font-family:"Plus Jakarta Sans",sans-serif;font-size:23px;letter-spacing:-.03em;background:linear-gradient(90deg,var(--p1),var(--p2));-webkit-background-clip:text;background-clip:text;color:transparent}
+html.pro .steps button .n{border:1.5px solid var(--line);background:#fff;color:var(--muted);font-weight:700}
+html.pro .steps button.done .n{background:var(--okbg);border-color:transparent;color:var(--ok)}
+html.pro .steps button[aria-current="step"] .n{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-color:transparent}
+html.pro .panel{background:var(--bg);border-right:1px solid var(--line)}
+html.pro .view3d,html.pro .pv-stage{border:1px solid var(--line);border-radius:20px;box-shadow:var(--card)}
+/* buttons */
+html.pro .btn{border:1px solid var(--line);background:#fff;border-radius:12px;font-weight:700;font-size:15px;box-shadow:0 1px 2px rgba(27,34,50,.06)}
+html.pro .btn:hover{transform:none;border-color:#C9CEDA;box-shadow:0 2px 8px rgba(27,34,50,.10)}
+html.pro .btn:active{transform:scale(.98);box-shadow:none}
+html.pro .btn.primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:var(--pt);border-color:transparent;box-shadow:0 6px 16px rgba(123,92,250,.28)}
+html.pro.pal2 .btn.primary{box-shadow:0 6px 16px rgba(16,185,129,.28)}
+html.pro .btn.small{border-radius:10px;box-shadow:none}
+html.pro .btn.big{border-radius:14px;box-shadow:0 8px 20px rgba(123,92,250,.25)}
+html.pro .btn.dashed{border:1.5px dashed #C9CEDA;background:#fff}
+html.pro .seg{border:1px solid var(--line);border-radius:12px;background:#F0F2F7}
+html.pro .seg button{font-weight:700;color:var(--muted)}
+html.pro .seg button.on{background:#fff;border:0;color:var(--ink);box-shadow:0 1px 4px rgba(27,34,50,.12)}
+html.pro input[type=number],html.pro input[type=url],html.pro input[type=text],html.pro select,html.pro textarea{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+html.pro textarea:focus,html.pro input:focus{outline:2px solid var(--p1);outline-offset:0}
+/* home */
+html.pro .bigbtn{border:0;border-radius:20px;box-shadow:var(--card);background:#fff}
+html.pro .bigbtn:active{transform:scale(.99);box-shadow:var(--card)}
+html.pro .bigbtn.mint{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+html.pro .bigbtn.yellow{background:#fff;color:var(--ink)}
+html.pro .bico{border:0;border-radius:14px;background:var(--soft1);color:var(--p1)}
+html.pro .bigbtn.mint .bico{background:rgba(255,255,255,.22);color:#fff}
+html.pro .bigbtn small{font-weight:500;opacity:.9}
+html.pro .bubble{border:0;background:#fff;box-shadow:var(--card);font-weight:700}
+html.pro .bubble.say{background:var(--soft3)}
+/* tiles: pastel icon bubbles, colourful but calm */
+html.pro .tile3{border:1px solid var(--line);border-radius:16px;box-shadow:var(--card);font-weight:700;font-size:14.5px}
+html.pro .tile3 .ic{width:44px;height:44px;padding:10px;border-radius:12px;background:var(--soft1);color:var(--p1)}
+html.pro .tiles>.tile3:nth-child(2) .ic{background:var(--soft2);color:#0E8F86}
+html.pro .tiles>.tile3:nth-child(3) .ic{background:var(--soft3);color:#B7791F}
+html.pro .tiles>.tile3:nth-child(4) .ic{background:var(--soft4);color:#D6336C}
+html.pro .tile3.on{background:#fff;border-color:var(--p1);box-shadow:0 0 0 2px var(--p1),var(--card)}
+html.pro .tile3 .cnt{border:0;background:var(--p1);color:#fff}
+html.pro .scanrow.big .btn{border-radius:14px}
+html.pro details.typeit,html.pro details.more,html.pro details.storebox,html.pro .opencard,html.pro .freebar{border:1px solid var(--line);border-radius:16px;box-shadow:var(--card)}
+/* vibe */
+html.pro .idea,html.pro .chip{border:1px solid var(--line)!important;font-weight:600;background:#fff}
+html.pro .idea.on{background:var(--soft1);border-color:var(--p1)!important;color:var(--p1)}
+html.pro .lbl .num,html.pro .num{border:0;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+html.pro .style{border:1px solid var(--line);border-radius:14px;box-shadow:var(--card)}
+html.pro .style[aria-checked="true"]{background:#fff;border-color:var(--p1);box-shadow:0 0 0 2px var(--p1)}
+html.pro .famtabs button[aria-selected="true"]{background:var(--soft1);color:var(--p1);border-color:transparent}
+/* design */
+html.pro .fitsum{border:0;border-radius:14px;box-shadow:none;background:var(--okbg);color:var(--ok)}
+html.pro .fitsum.tight{background:var(--tightbg);color:#8A5A00}html.pro .fitsum.bad{background:var(--badbg);color:#B42318}
+html.pro .fsi{border:0;background:#fff}
+html.pro .row{border:1px solid var(--line);border-radius:16px;box-shadow:var(--card)}
+html.pro .row.sel{background:#fff;box-shadow:0 0 0 2px var(--p1),var(--card)}
+html.pro .row .chip.ok{background:var(--okbg);color:var(--ok);border-color:transparent!important}
+html.pro .addbar{background:linear-gradient(rgba(246,247,251,0),var(--bg) 30%)}
+html.pro .row .tile{border-radius:12px}html.pro .ck{accent-color:var(--p1)}html.pro .linkbtn{color:var(--p1)}html.pro .pick button{color:var(--p1)}
+html.pro .addbar .btn{border-radius:14px;box-shadow:0 8px 20px rgba(27,34,50,.14)}
+html.pro .addbar .add{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:0}
+html.pro .addbar .fitjump{background:#fff}
+html.pro .snugnote{border:0;background:var(--tightbg);border-radius:14px}
+html.pro .fbbar{border:0;background:var(--soft2)}html.pro .fbbar i{background:var(--p1)}
+html.pro .fbkey i{border:0}html.pro .fbkey .k1{background:var(--p1)}html.pro .fbkey .k2{background:var(--soft2);outline:1px solid #9BDAD5}
+html.pro .choice{border:1px solid var(--line);border-radius:16px;box-shadow:var(--card)}
+html.pro .choice .ic{color:var(--p1)}
+html.pro .choice.yellow{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:0}
+html.pro .choice.yellow .ic{color:#fff}
+/* fit */
+html.pro .verdict{border:0!important;border-radius:16px;box-shadow:none}
+html.pro .verdict.yes{background:var(--okbg)}html.pro .verdict.tight{background:var(--tightbg)}html.pro .verdict.no{background:var(--badbg)}
+html.pro dialog{border:0;border-radius:20px;box-shadow:0 20px 60px rgba(27,34,50,.25)}
+html.pro .tdel{border:1px solid var(--line);box-shadow:var(--card)}
 </style>
 </head>
 <body>
