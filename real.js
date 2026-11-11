@@ -790,7 +790,7 @@ class PhotoView {
       if (e.target.closest('#pvGuideX')) { this.guideOff = true; this.paint(); }
       if (e.target.closest('#pvGuideOn')) { this.guideOff = false; this.paint(); }
       const sh = e.target.closest('[data-shot]'); if (sh) { this.ph = this.shots[+sh.dataset.shot]; this.img.src = this.ph.src; this.solve(); this.bars(); this.paint(); }
-      if (e.target.closest('#pvDrop') && this.shots.length > 1) { this.shots.splice(this.shots.indexOf(this.ph), 1); this.ph = this.shots[0]; this.img.src = this.ph.src; this.solve(); this.bars(); this.paint(); }
+      if (e.target.closest('#pvDrop')) this.dropShot();
     });
     new ResizeObserver(() => this.ph && this.paint()).observe(this.stage);
     /* mark mode: a tap on the floor adds a piece you already own at that spot */
@@ -817,6 +817,14 @@ class PhotoView {
   }
   box() { return this.cv.getBoundingClientRect(); }
   /* Each photo is one "angle" of the room. asNew adds another angle (facing the next wall); otherwise it replaces the current one. */
+  dropShot() {
+    const i = this.shots.indexOf(this.ph); if (i < 0) return;
+    this.shots.splice(i, 1); this.ph = this.shots[0] || null;
+    if (this.ph) { this.img.src = this.ph.src; this.solve(); }
+    else { this.img.removeAttribute('src'); this.sol = null; this.cv.width = this.cv.width; this.svg.innerHTML = ''; }
+    if (R3) R3.dirty = true; try { G3.redraw(); } catch (x) { }
+    this.bars(); this.paint(); document.dispatchEvent(new Event('fitroom-photo'));
+  }
   setPhoto(src, asNew) {
     const im = new Image();
     im.onload = () => {
@@ -908,7 +916,7 @@ class PhotoView {
     const tabs = this.shots.map((s, i) => `<button type="button" data-shot="${i}" class="${s === p ? 'on' : ''}">Angle ${i + 1} · ${WALLNAME[s.wall]} wall</button>`).join('');
     this.bar.innerHTML = `<div class="pv-angles"><span class="pv-lbl">Angles</span><div class="seg">${tabs}</div>
         <label class="btn small"><input type="file" accept="image/*" id="pvAdd" hidden>+ Add another angle</label>
-        ${this.shots.length > 1 ? '<button type="button" class="btn small" id="pvDrop">Remove this angle</button>' : ''}</div>
+        <button type="button" class="btn small" id="pvDrop">${this.shots.length > 1 ? 'Remove this angle' : 'Remove photo'}</button></div>
       <label class="btn small"><input type="file" accept="image/*" id="pvFile" hidden>Change photo</label>
       <button type="button" class="btn small${p.mode === 'align' ? ' primary' : ''}" id="pvAlign">${p.mode === 'align' ? 'Done, place furniture' : 'Line up the floor'}</button>
       ${p.mode === 'align' ? '' : `<button type="button" class="btn small${p.mode === 'mark' ? ' primary' : ''}" id="pvMark">${p.mode === 'mark' ? 'Done marking' : 'Mark furniture already here'}</button>`}
@@ -1092,6 +1100,7 @@ const api = {
   photoSync() { if (PV && PV.ph) PV.paint(); },
   photoSet(src) { if (PV) PV.setPhoto(src); },
   hasPhoto() { return !!(PV && PV.ph); },
+  photoDrop() { if (PV) PV.dropShot(); },
   photoCount() { return PV ? PV.projections().length : 0; },
   photoRoomOn: () => photoRoomOn(),
   /* glide the 3D camera to where photo angle i was taken */

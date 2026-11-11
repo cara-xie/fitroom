@@ -485,6 +485,14 @@ details.rowopts .why{margin:6px 0}
 .verdict>div{display:flex;flex-direction:column;align-items:flex-start}
 .verdict.yes{background:var(--mint)}.verdict.tight{background:#FFF0B8}.verdict.no{background:#FFC9C2}
 .verdict .pouf{flex:none}
+/* Poufy hint + photo removal */
+.pouthint{display:flex;align-items:center;gap:8px;margin:0 0 10px}.pouthint .pouf{flex:none}
+.bubble.say{transform:none;border-radius:16px 16px 16px 4px;padding:6px 10px;font-size:14.5px;line-height:1.25;background:var(--yellow)}
+.bubble .desk{display:none}@media (min-width:861px){.bubble .mob{display:none}.bubble .desk{display:inline}}
+.quickadd{display:flex;flex-wrap:wrap;gap:8px}
+.thumbs{gap:12px;margin-top:12px}.thumbs .thumb{position:relative;display:inline-block}
+.tdel{position:absolute;top:-8px;right:-8px;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-weight:800;font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.money input{border:0!important;box-shadow:none}
 /* dialogs */
 dialog{border:var(--bw) solid var(--ink);border-radius:24px;box-shadow:6px 6px 0 var(--ink)}
 .addcats .idea{font-size:15px;padding:6px 12px}
@@ -1353,6 +1361,7 @@ ${S.scanNote?`<p class="scannote">${esc(S.scanNote)}</p>`:''}
 </fieldset>
 ${shapeUI()}</details>
 <button class="btn primary wide big" data-go="1b">Next: what's in the room</button>`}
+function poufHint(){return`<div class="pouthint">${pouf('happy',58)}<span class="bubble say"><span class="mob">Scroll down to the floor plan and drag your furniture to match your room!</span><span class="desk">Drag your furniture on the floor plan to match your room!</span></span></div>`}
 function haveUI(){const hs=S.room.have;return`
 ${hs.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-hvk="${i}">${Object.entries(HAVE).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${o.kind===k&&o.label?esc(o.label):v.label}</option>`).join('')}</select></label>
 <div class="field"><span class="lbl">&nbsp;</span><button type="button" class="btn small" data-hvrot="${i}">Turn it 90°</button></div></div>
@@ -1360,7 +1369,7 @@ ${hs.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span cl
 <div class="dim"><span>Depth (top to bottom)</span>${ftinBox('have.'+i+'.d',o.d,'Depth of '+haveLabel(o))}</div>
 <button type="button" class="linkbtn" data-delhave="${i}">Remove ${esc(haveLabel(o).toLowerCase())}</button></div>`).join('')}
 <button type="button" class="btn" id="addHave">${ICO.plus} Add a piece I own</button>
-<p class="hint">Then drag it on the floor plan to where it really is.</p>`}
+`}
 function builtUI(){const os=S.room.obs;return`
 ${os.map((o,i)=>`<div class="obs"><div class="two"><label class="field"><span class="lbl">What</span><select data-obs="${i}" data-ok="kind">${Object.entries(OBS).map(([k,v])=>`<option value="${k}"${o.kind===k?' selected':''}>${v.label}</option>`).join('')}</select></label>
 <label class="field"><span class="lbl">Which wall</span><select data-obs="${i}" data-ok="wall">${wallOpts(o.wall)}</select></label></div>
@@ -1378,16 +1387,18 @@ function p1b(){const r=S.room,hs=r.have,os=r.obs,ph=!!(window.FR_REAL&&FR_REAL.h
 <h1>What's already here?</h1>
 <p class="lede">We plan around it. Empty room? Skip!</p>
 <p class="roomsum"><b>${fmt(roomW())} × ${fmt(roomL())}</b> ${RT().noun} · <button type="button" class="linkbtn" data-go="1">change size</button></p>
-<div class="tiles t2">${T('have',ICO.bed,'My furniture',hs.length)}${T('obs',ICO.closet,'Closet & more',os.length)}${T('door',ICO.door,'Door & window','')}${T('photo',ICO.cam,'Room photo',ph?'✓':'')}</div>
-${o==='have'?`<div class="opencard">${haveUI()}</div>`:''}
-${o==='obs'?`<div class="opencard">${builtUI()}</div>`:''}
+<div class="tiles t2">${T('have',ICO.bed,'My furniture',hs.length)}${T('miss',ICO.plus,'Add missed furniture','')}${T('door',ICO.door,'Doors, windows & closets',os.length)}${T('photo',ICO.cam,'Room photo',ph?'✓':'')}</div>
+${o==='have'?`<div class="opencard">${poufHint()}${haveUI()}</div>`:''}
+${o==='miss'?`<div class="opencard"><p class="hint" style="margin-top:0"><b>Did the scan miss something?</b> Tap what it is. Then drag it into place on the floor plan.</p>
+<div class="chips quickadd">${Object.entries(HAVE).map(([k,v])=>`<button type="button" class="idea" data-addhave="${k}">+ ${v.label}</button>`).join('')}</div></div>`:''}
 ${o==='door'?`<div class="opencard"><div class="two">
 <label class="field"><span class="lbl">Door</span><select id="door">${wallOpts(r.door)}</select></label>
 <label class="field"><span class="lbl">Main window</span><select id="wnd">${wallOpts(r.window,true)}</select></label></div>
-<div class="dim"><span>Door starts from the ${r.door==='N'||r.door==='S'?'left':'top'} corner</span>${ftinBox('doorOff',doorA())}</div></div>`:''}
+<div class="dim"><span>Door starts from the ${r.door==='N'||r.door==='S'?'left':'top'} corner</span>${ftinBox('doorOff',doorA())}</div>
+<h3 class="sub">Closets, extra doors, fridge…</h3>${builtUI()}</div>`:''}
 ${o==='photo'?`<div class="opencard"><p class="hint" style="margin-top:0">Stand in a corner. Get the far wall touching the floor in the shot. We'll place furniture right in your photo.</p>
-<label class="btn"><input type="file" accept="image/*" id="roomPhoto" hidden>${ph?'Change my photo':'Add a room photo'}</label></div>`:''}
-<p class="dragtip mob">${ICO.move} Drag things on the floor plan below to move them.</p>
+<label class="btn"><input type="file" accept="image/*" id="roomPhoto" hidden>${ph?'Change my photo':'Add a room photo'}</label>${ph?' <button type="button" class="btn" id="roomPhotoDel">Remove photo</button>':''}</div>`:''}
+${o==='have'?'':`<p class="dragtip mob">${ICO.move} Drag things on the floor plan below to move them.</p>`}
 <button class="btn primary wide big" data-go="2">Next: pick a vibe</button>`}
 function detectLine(){
   if(S.styleManual&&S.aiWhy)return`Claude read your ${S.aiPics?'words and photos':'words'} as <b>${STYLES[S.styleManual].name}</b>: ${esc(S.aiWhy)}`+(S.aiWords.length?`<br>Words it noticed: ${S.aiWords.map(esc).join(', ')}.`:'')+(S.aiColors.length?`<br>Colors it saw: ${S.aiColors.map(c=>`<span title="${c}" style="display:inline-block;width:22px;height:22px;border-radius:6px;vertical-align:middle;margin-right:4px;border:1px solid rgba(0,0,0,.15);background:${c}"></span>`).join('')}`:'')+(S.aiMust.length?`<br>Pieces it suggests: ${S.aiMust.map(esc).join(', ')}.`:'');
@@ -1434,8 +1445,8 @@ function p2(){const st=effStyle();setTimeout(famScroll,0);ideaI=Math.floor(Math.
 <span class="lbl"><i class="num">2</i>Or tap a style</span>
 <div id="styleBox">${styleBox()}</div>
 <div class="field"><span class="lbl"><i class="num">3</i>Inspo photos <small class="opt">optional</small></span>
-<label class="btn dashed"><input type="file" accept="image/*" multiple id="pics" hidden>${ICO.cam} ${S.photos.length?'Add more photos':'Add photos of rooms you love'}</label>${S.photos.length?' <button type="button" class="btn small" id="clearPics">Remove photos</button>':''}
-<div class="thumbs">${S.photos.map(p=>`<img src="${p}" alt="Inspiration photo">`).join('')}</div>
+<label class="btn dashed"><input type="file" accept="image/*" multiple id="pics" hidden>${ICO.cam} ${S.photos.length?'Add more photos':'Add photos of rooms you love'}</label>${S.photos.length>1?' <button type="button" class="btn small" id="clearPics">Remove all</button>':''}
+<div class="thumbs">${S.photos.map((p,i)=>`<span class="thumb"><img src="${p}" alt="Inspiration photo ${i+1}"><button type="button" class="tdel" data-delpic="${i}" aria-label="Remove photo ${i+1}">×</button></span>`).join('')}</div>
 ${S.photos.length?'<p class="hint">Tap “Ask Claude” above so it reads your photos too.</p>':''}</div>
 <div class="field"><span class="lbl">Budget</span><div class="seg" id="tiers">${Object.entries(TIERS).map(([k,t])=>`<button type="button" data-tier="${k}" class="${S.tier===k?'on':''}">${t.label}</button>`).join('')}</div>
 <p class="hint" id="tierHint">${tierHint()}</p>
@@ -1543,7 +1554,7 @@ function p4(){const F=S.fit,r=S.room,v=x=>x==null?'':x;return`
 <div class="field"><span class="lbl"><i class="num">1</i>Your room</span>
 <p class="hint" style="margin:0">${fmt(roomW())} × ${fmt(roomL())} ${RT().noun}, door on the ${WALLN[r.door]} wall.${S.scanNote?' '+esc(S.scanNote):''}</p>
 <div class="scanrow" style="margin-top:8px">${scanBtn()} <button type="button" class="btn small" data-go="1">Type the size instead</button></div>
-<div style="margin-top:8px"><label class="btn small"><input type="file" accept="image/*" id="fitPhoto" hidden>${F.photo?'Change room photo':'Add a room photo'}</label></div>
+<div style="margin-top:8px"><label class="btn small"><input type="file" accept="image/*" id="fitPhoto" hidden>${F.photo?'Change room photo':'Add a room photo'}</label>${F.photo?' <button type="button" class="btn small" id="fitPhotoDel">Remove photo</button>':''}</div>
 ${F.photo?`<img class="fitphoto" src="${F.photo}" alt="Your room photo">`:''}
 </div>
 <label class="field"><span class="lbl"><i class="num">2</i>Paste a store link</span><input type="url" id="fitUrl" placeholder="ikea.com/…, article.com/…" value="${esc(F.url)}"></label>
@@ -1864,6 +1875,10 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#reset')){S.layout=planLayout();S.sel=null;render();return}
   if(e.target.closest('#addPiece')||e.target.closest('[data-addfurn]')){addDlg(null);return}
   if(e.target.closest('#smallPicks')){smallPicks();return}
+  const dp=e.target.closest('[data-delpic]');if(dp){S.photos.splice(+dp.dataset.delpic,1);if(!S.photos.length){S.photoStyle=null;S.photoWhy='';markDirty();render()}else analyzePhotos().then(()=>{markDirty();render()});return}
+  if(e.target.closest('#roomPhotoDel')){window.FR_REAL&&FR_REAL.photoDrop&&FR_REAL.photoDrop();render();return}
+  if(e.target.closest('#fitPhotoDel')){S.fit.photo=null;render();return}
+  const qa=e.target.closest('[data-addhave]');if(qa){const W=roomW(),L=roomL();addHave(qa.dataset.addhave,W/2,L/2);S.open1b='have';S.view='plan';applyView();roomChanged(true);return}
   const op=e.target.closest('[data-open]');if(op){S.open1b=S.open1b===op.dataset.open?null:op.dataset.open;const y=window.scrollY,ps=panel.scrollTop;render();window.scrollTo(0,y);panel.scrollTop=ps;return}
   const stb=e.target.closest('[data-store]');if(stb){const r=stb.dataset.store;if(S.storesOff.has(r))S.storesOff.delete(r);else if(S.storesOff.size<RETAILERS.length-1)S.storesOff.add(r);
     markDirty();if(S.step===3){S.layout=planLayout();S.dirty=false;S.sel=null}const y=window.scrollY,ps=panel.scrollTop;render();window.scrollTo(0,y);panel.scrollTop=ps;return}
