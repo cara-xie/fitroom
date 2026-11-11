@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<script>(function(){var m=location.search.match(/[?&]look=(\w+)/);if(m){if(/^pro/.test(m[1]))document.documentElement.classList.add("pro");if(m[1]==="pro2")document.documentElement.classList.add("pal2");if(m[1]==="pro3")document.documentElement.classList.add("pal3")}})()</script>
+<script>(function(){var q=location.search,m=q.match(/[?&]look=(\w+)/),inApp=/[?&]app=1/.test(q)||!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.fitroom),
+k=m?m[1]:(inApp?"sticker":"pro3"),c=document.documentElement.classList;
+/* Website: Fitroom polished look (pro3). iPhone app: sticker look. ?look=sticker|pro|pro2|pro3 overrides for previews. */
+if(/^pro/.test(k))c.add("pro");if(k==="pro2")c.add("pal2");if(k==="pro3")c.add("pal3")})()</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
