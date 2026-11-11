@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<script>(function(){var m=location.search.match(/[?&]look=(\w+)/);if(m){if(/^pro/.test(m[1]))document.documentElement.classList.add("pro");if(m[1]==="pro2")document.documentElement.classList.add("pal2");if(m[1]==="pro3")document.documentElement.classList.add("pal3")}})()</script>
+<script>(function(){var m=location.search.match(/[?&]look=(\w+)/),k=m?m[1]:"pro3",c=document.documentElement.classList;
+/* Default look: Fitroom polished (pro3). ?look=sticker shows the old sticker look; ?look=pro / pro2 the other previews. */
+if(/^pro/.test(k))c.add("pro");if(k==="pro2")c.add("pal2");if(k==="pro3")c.add("pal3")})()</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
