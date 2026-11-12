@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <script>(function(){var q=location.search,m=q.match(/[?&]look=(\w+)/),inApp=/[?&]app=1/.test(q)||!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.fitroom),
-k=m?m[1]:(inApp?"sticker":"pro3"),c=document.documentElement.classList;
-/* Website: Fitroom polished look (pro3). iPhone app: sticker look. ?look=sticker|pro|pro2|pro3 overrides for previews. */
-if(/^pro/.test(k))c.add("pro");if(k==="pro2")c.add("pal2");if(k==="pro3")c.add("pal3")})()</script>
+k=m?m[1]:(inApp?"sticker":"moove"),c=document.documentElement.classList;
+/* Website: Moove look (calm coastal paper, from Moove). iPhone app: sticker look. ?look=sticker|pro|pro2|pro3|moove overrides for previews. */
+if(k==="moove")c.add("pro","mv");if(/^pro/.test(k))c.add("pro");if(k==="pro2")c.add("pal2");if(k==="pro3")c.add("pal3")})()</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fitroom 3D demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Forum&family=Ysabeau+Infant:wght@400..800&family=Cormorant+Garamond:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#E8EBEE; --surface:#F7F8F9; --ink:#1E2A35; --muted:#5A6672; --line:#C6CDD4;
@@ -603,6 +603,169 @@ html.pro.pal3 .bigbtn.yellow{background:#fff}
 html.pro.pal3 .bubble.say{background:#FFF1C7}
 html.pro.pal3 .idea.on,html.pro.pal3 .famtabs button[aria-selected="true"]{background:var(--soft1);color:var(--p1)}
 html.pro.pal3 .fbbar i,html.pro.pal3 .fbkey .k1{background:#C8B6FF}
+/* ===== Moove look (html.pro.mv): Moove's calm coastal paper. Cream page, harbor ink, slate + sage,
+   Forum titles, Ysabeau Infant text, Cormorant Garamond italic ledes, thin rules, pill buttons. ===== */
+html.pro.mv[data-theme]{--bg:#F4F0D7;--surface:#FAF7E6;--ink:#121F26;--muted:#45626E;--line:#C9D6D1;--accent:#3E6474;--accent-ink:#F4F0D7;
+  --p1:#46707F;--p2:#46707F;--pt:#F4F0D7;--soft1:#D5E4E1;--soft2:#EFE3C4;--soft3:#E5E9DF;--soft4:#EFDCCD;--okbg:#D5E4E1;--ok:#2F5A4F;--tightbg:#F3E6C2;--badbg:#EFDCCD;
+  --mint:#D5E4E1;--yellow:#EBD9A6;--lav:#7FA8A3;--pink:#EFDCCD;--sh:none;--bw:1px;--card:0 1px 2px rgba(18,31,38,.06);
+  --floor:#FAF7E6;--wall:#121F26;--grid:rgba(18,31,38,.06);--zone:rgba(127,168,163,.20);--fit:#2F5A4F;--warn:#A24D35}
+html.pro.mv body{font-family:"Ysabeau Infant","Plus Jakarta Sans",system-ui,sans-serif;font-weight:500;font-size:16.5px;background:var(--bg);color:var(--ink)}
+html.pro.mv h1,html.pro.mv .homeh,html.pro.mv .brand,html.pro.mv .bigbtn b,html.pro.mv .choice b,html.pro.mv h2,html.pro.mv dialog h3,html.pro.mv .pv-empty h3{font-family:"Forum",Georgia,serif;font-weight:400;letter-spacing:0}
+html.pro.mv h1{font-size:clamp(34px,3.6vw,42px);line-height:1.05}
+html.pro.mv h2{font-size:24px;margin:28px 0 10px}
+html.pro.mv .homeh{font-size:46px;line-height:1.02}
+html.pro.mv .lede{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:500;font-size:21px;line-height:1.3;color:var(--muted)}
+html.pro.mv .lbl,html.pro.mv legend,html.pro.mv h3{font-weight:700}
+html.pro.mv .hint{font-size:14.5px;color:var(--muted)}
+html.pro.mv .top{background:var(--bg);border-bottom:1px solid var(--line)}
+html.pro.mv .brand{background:none;color:var(--ink);-webkit-background-clip:border-box;background-clip:border-box;font-size:31px;letter-spacing:.01em}
+html.pro.mv .brand::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#B48A3E;margin-left:3px}
+html.pro.mv .steps button{font-weight:700}
+html.pro.mv .steps button .n{border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:700}
+html.pro.mv .steps button.done .n{background:var(--soft1);border-color:var(--soft1);color:var(--ok)}
+html.pro.mv .steps button[aria-current="step"] .n{background:var(--p1);border-color:var(--p1);color:var(--pt)}
+html.pro.mv .panel{background:var(--bg);border-right:1px solid var(--line)}
+html.pro.mv .view3d,html.pro.mv .pv-stage{border:1px solid var(--line);border-radius:20px;box-shadow:none;background:var(--surface)}
+/* pill buttons */
+html.pro.mv .btn{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:999px;font-weight:700;box-shadow:none;padding:10px 20px}
+html.pro.mv .btn:hover{background:var(--surface);border-color:var(--accent);box-shadow:none;transform:none}
+html.pro.mv .btn:active{transform:scale(.98)}
+html.pro.mv .btn.primary,html.pro.mv .bigbtn.mint,html.pro.mv .lbl .num,html.pro.mv .num{background:var(--p1);border-color:var(--p1);color:var(--pt);box-shadow:none}
+html.pro.mv .btn.primary:hover{background:#3B6170}
+html.pro.mv .btn.big{border-radius:999px;box-shadow:none}
+html.pro.mv .btn.small{border-radius:999px;padding:6px 14px}
+html.pro.mv .btn.dashed{border:1px dashed var(--accent);background:transparent}
+html.pro.mv .linkbtn,html.pro.mv .pick button{color:var(--accent)}
+html.pro.mv .seg{border:0;border-radius:999px;background:var(--soft1);padding:3px}
+html.pro.mv .seg button{border-radius:999px;color:var(--muted);font-weight:600}
+html.pro.mv .seg button.on{background:var(--bg);color:var(--ink);font-weight:700;box-shadow:0 0 0 1px var(--lav)}
+html.pro.mv input[type=number],html.pro.mv input[type=url],html.pro.mv input[type=text],html.pro.mv select,html.pro.mv textarea{border:1px solid var(--line)!important;border-radius:10px!important;background:var(--surface);box-shadow:none;font-weight:500}
+html.pro.mv textarea:focus,html.pro.mv input:focus,html.pro.mv select:focus{outline:2px solid var(--lav);outline-offset:0}
+html.pro.mv :focus-visible{outline-color:var(--accent)}
+/* home */
+html.pro.mv .homewrap{max-width:460px}
+html.pro.mv .bigbtn{border:1px solid var(--line);border-radius:20px;box-shadow:none;background:var(--surface);color:var(--ink)}
+html.pro.mv .bigbtn:active{transform:scale(.99);box-shadow:none}
+html.pro.mv .bigbtn b{font-size:26px}
+html.pro.mv .bigbtn.mint{color:var(--pt)}
+html.pro.mv .bigbtn small{font-weight:500;opacity:.92;font-size:15px}
+html.pro.mv .bico{border:0;border-radius:14px;background:var(--soft1);color:var(--accent)}
+html.pro.mv .bigbtn.mint .bico{background:rgba(244,240,215,.18);color:var(--pt)}
+html.pro.mv .bigbtn.yellow .bico{background:var(--soft2);color:#7E5C1C}
+html.pro.mv .bigbtn.sage .bico{background:var(--soft1);color:var(--accent)}
+html.pro.mv .bubble{border:1px solid var(--line);background:var(--surface);box-shadow:none;font-weight:700}
+html.pro.mv .bubble.say{background:var(--soft2);border-color:transparent}
+/* Poufy, in Moove's palette: a clay-pink pouf with harbor-ink outlines */
+html.pro.mv .pouf rect[fill="#FF9EB5"]{fill:#E2B4A3}
+html.pro.mv .pouf circle[fill="#FF5C86"]{fill:#A24D35}
+/* tiles + cards: paper, thin rules, no shadows */
+html.pro.mv .tile3{border:1px solid var(--line);border-radius:16px;box-shadow:none;background:var(--surface);font-weight:700}
+html.pro.mv .tile3 .ic{width:44px;height:44px;padding:10px;border-radius:12px;background:var(--soft1);color:var(--accent)}
+html.pro.mv .tiles>.tile3:nth-child(2) .ic{background:var(--soft2);color:#7E5C1C}
+html.pro.mv .tiles>.tile3:nth-child(3) .ic{background:var(--soft4);color:#A24D35}
+html.pro.mv .tiles>.tile3:nth-child(4) .ic{background:var(--soft3);color:var(--muted)}
+html.pro.mv .tile3.on{background:var(--surface);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+html.pro.mv .tile3 .cnt{border:0;background:var(--p1);color:var(--pt)}
+html.pro.mv details.typeit,html.pro.mv details.more,html.pro.mv details.storebox,html.pro.mv .opencard,html.pro.mv .freebar{border:1px solid var(--line);border-radius:16px;box-shadow:none;background:var(--surface)}
+html.pro.mv .idea,html.pro.mv .chip{border:1px solid var(--line)!important;font-weight:600;background:var(--surface);color:var(--ink)}
+html.pro.mv .idea.on{background:var(--soft1);border-color:var(--lav)!important;color:var(--ink)}
+html.pro.mv .style{border:1px solid var(--line);border-radius:14px;box-shadow:none;background:var(--surface)}
+html.pro.mv .style[aria-checked="true"]{background:var(--surface);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+html.pro.mv .famtabs button[aria-selected="true"]{background:var(--soft1);color:var(--ink);border-color:transparent}
+/* design step: ledger rows */
+html.pro.mv .fitsum{border:0;border-radius:14px;box-shadow:none;background:var(--okbg);color:var(--ok)}
+html.pro.mv .fitsum.tight{background:var(--tightbg);color:#7E5C1C}html.pro.mv .fitsum.bad{background:var(--badbg);color:#A24D35}
+html.pro.mv .fsi{border:0;background:var(--surface)}
+html.pro.mv .row{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;background:transparent}
+html.pro.mv .row.sel{background:var(--surface);border-radius:14px;box-shadow:0 0 0 1px var(--accent)}
+html.pro.mv .row .chip.ok{background:var(--okbg);color:var(--ok);border-color:transparent!important}
+html.pro.mv .addbar{background:linear-gradient(rgba(244,240,215,0),var(--bg) 30%)}
+html.pro.mv .addbar .btn{border-radius:999px;box-shadow:0 4px 14px rgba(18,31,38,.10)}
+html.pro.mv .addbar .add,html.pro.mv .choice.yellow{background:#E7CF95;border-color:#E7CF95;color:var(--ink)}
+html.pro.mv .addbar .fitjump{background:var(--bg);color:var(--accent)}
+html.pro.mv .snugnote{border:0;background:var(--tightbg);border-radius:14px}
+html.pro.mv .fbbar{border:0;background:var(--soft1)}html.pro.mv .fbbar i,html.pro.mv .fbkey .k1{background:var(--lav)}
+html.pro.mv .choice{border:1px solid var(--line);border-radius:16px;box-shadow:none;background:var(--surface)}
+html.pro.mv .choice .ic{color:var(--accent)}html.pro.mv .choice.yellow .ic{color:var(--ink)}
+html.pro.mv .verdict{border:0!important;border-radius:16px;box-shadow:none}
+html.pro.mv .verdict.yes{background:var(--okbg)}html.pro.mv .verdict.tight{background:var(--tightbg)}html.pro.mv .verdict.no{background:var(--badbg)}
+html.pro.mv dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 20px 60px rgba(18,31,38,.22);background:var(--bg);color:var(--ink)}
+html.pro.mv .opencard .obs,html.pro.mv .obs{border-color:var(--line)}
+html.pro.mv .tdel{border:1px solid var(--line);box-shadow:none;background:var(--surface)}
+html.pro.mv .help3,html.pro.mv .card3,html.pro.mv .pv-guide{background:var(--surface);border-color:var(--line)}
+
+/* ===== Moving (from Moove): works in every look ===== */
+.bigbtn.sage{background:var(--lav,#C8B6FF)}
+html.pro.mv .bigbtn.sage{background:var(--surface)}
+.layout.s5{grid-template-columns:1fr}.layout.s5 .stage{display:none}.layout.s5 .panel{border-right:0;min-height:calc(100vh - 70px);display:flex;justify-content:center}
+.mvwrap{width:100%;max-width:720px;min-width:0;padding-bottom:24px}
+.layout.s5 .panel{min-width:0;overflow-x:hidden}
+.layout.s5{grid-template-columns:minmax(0,1fr)}
+.mvhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mvkick{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,var(--muted))}
+.mvback{background:none;border:0;padding:0;cursor:pointer;font-size:15px}
+.mvwrap .lede{margin-bottom:18px}
+.mvtabs{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--soft1,#eee);margin:0 0 22px;overflow-x:auto}
+.mvtabs button{flex:1 0 auto;border:0;background:none;border-radius:999px;padding:9px 14px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.mvtabs button[aria-selected="true"]{background:var(--bg);color:var(--ink);font-weight:700;box-shadow:0 0 0 1px var(--lav,var(--line))}
+.mvtabs i{font-style:normal;font-size:12px;margin-left:6px;opacity:.75}
+.mvadd .chips{display:flex;flex-wrap:wrap;gap:8px}
+.mvadd .idea{padding:6px 13px;font-size:14.5px;cursor:pointer}
+.mvdeck{display:flex;flex-direction:column;align-items:center;margin:6px 0 10px}
+.mvcard{position:relative;width:min(100%,380px);min-height:230px;padding:22px 24px;border:1px solid var(--line);border-radius:28px;background:var(--surface);box-shadow:0 8px 24px rgba(18,31,38,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.mvcard:active{cursor:grabbing}
+.mvcard::after{content:attr(data-hint);position:absolute;top:14px;right:16px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent,var(--ink))}
+.mvcard h2,html.pro.mv .mvcard h2{margin:2px 0 0;font-size:36px;line-height:1.05}
+.mvcount{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mvmeta{margin:0;color:var(--muted);font-size:15px}
+.mvqty{display:flex;align-items:center;gap:12px;margin-top:8px}.mvqty span{min-width:84px;font-weight:700}
+.mvqty .btn{min-width:40px;padding:4px 0}
+.mvtag{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:999px;background:var(--soft4,#fde);color:var(--warn,#a33);font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.mvact{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:min(100%,520px);margin-top:16px}
+.mvact .btn,html.pro.mv .mvact .btn{padding:10px 4px;font-size:15px;white-space:nowrap}
+@media (max-width:480px){.mvact{grid-template-columns:1fr 1fr}.mvtabs button{padding:9px 10px}}
+.mvswipe{text-align:center}
+.mvdone{text-align:center;margin:10px 0 18px;font-size:18px}
+.mvstrip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:18px 0 6px;font-size:15px;color:var(--muted)}
+.mvstrip b{color:var(--ink);font-size:17px}
+.mvboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:10px}
+@media (max-width:700px){.mvboard{grid-template-columns:1fr 1fr}.mvact .btn{font-size:14px}}
+.mvcol h3{margin:8px 0 4px;font-size:15px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.mvcol h3 i{font-style:normal;color:var(--muted);font-weight:600;margin-left:4px}
+.mvrow{padding:6px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.mvname{background:none;border:0;padding:0;text-align:left;font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.mvname:hover{text-decoration:underline}
+.mvrow select{padding:4px 6px;font-size:13.5px}
+.mvmore{margin-top:22px}
+.mvempty{text-align:center;padding:28px 0}.mvempty b{font-size:19px}.mvempty .btn{margin-top:10px}
+.mvsell{display:grid;gap:10px;padding:16px 0;border-bottom:1px solid var(--line)}
+.mvsellh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.mvsellh b{font-size:18px}
+.mvcond{max-width:340px}
+.mvprice{display:flex;align-items:center;gap:6px;font-weight:700}.mvprice input{width:110px}.mvdollar{color:var(--muted)}
+.mvsell textarea{font-size:15px}
+.mvsell .btn.small{justify-self:start}
+.mvlist{line-height:1.7}
+.mvtop{margin:0 0 10px}
+.mvform{margin-bottom:6px}
+.mvstep{display:flex;align-items:center;gap:12px}.mvstep b{min-width:20px;text-align:center;font-size:17px}.mvstep .btn{min-width:40px;padding:4px 0}
+.mvform .ftin input{width:92px}.mvlink{margin-top:16px}.mvlink input{width:100%;padding:9px 11px}
+.mvrooms{display:grid;gap:0;margin-bottom:10px}
+.mvroom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.mvroom>div{display:flex;flex-direction:column}.mvroom b{font-size:17px}.mvroom .hint{margin:0}
+.mvboxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:14px 0}
+.mvbox,.mvlabel{border:1px solid var(--line);border-radius:6px;background:#FAF7E6;overflow:hidden;color:#121F26}
+.mvband{padding:5px 10px;color:#F4F0D7;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mvbn{font-family:"Forum",Georgia,serif;font-size:44px;line-height:1;padding:8px 10px 0}
+.mvbc{margin:4px 10px 0;font-size:13.5px;font-weight:600;line-height:1.3}
+.mvbm{margin:6px 10px 10px;font-size:12px;color:#45626E}.mvbm b{color:#A24D35}
+#mvPrint{display:none}
+@media print{
+  body.mvprinting>*:not(#mvPrint){display:none!important}
+  body.mvprinting{background:#fff;padding:0}
+  body.mvprinting #mvPrint{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .mvlabel{break-inside:avoid;border:2px solid #121F26;border-radius:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mvlabel .mvband{font-size:22px;padding:10px 14px}.mvlabel .mvbn{font-size:120px;padding:10px 14px 0}.mvlabel .mvbc{font-size:20px;margin:6px 14px}.mvlabel .mvbm{font-size:18px;margin:8px 14px 14px}
+}
 </style>
 </head>
 <body>
@@ -1452,6 +1615,7 @@ function p0(){return`<div class="homewrap">
 <div class="homebtns">
 <button type="button" class="bigbtn mint" data-go="4" data-fitonly="1"><span class="bico">${ICO.tape}</span><span><b>Will this fit?</b><small>Paste a link, we check your room</small></span></button>
 <button type="button" class="bigbtn yellow" data-go="1"><span class="bico">${ICO.sofa}</span><span><b>Design my room</b><small>We pick pieces that fit your style</small></span></button>
+<button type="button" class="bigbtn sage" data-go="5"><span class="bico">${ICO.list}</span><span><b>Moving soon?</b><small>Sort, sell and pack your stuff</small></span></button>
 </div>
 <p class="hint trackhint">Fitroom counts anonymous clicks to get better. No names, contact details or photos.</p></div>`}
 /* Step 1: Scan */
@@ -1907,10 +2071,10 @@ ${it?`<p class="clr"><b>${esc(CATS[catOf(it)].label)}:</b> ${clearLine(S.sel)}</
 <div class="tools"><button class="btn small" id="rot" ${it?'':'disabled'}>${it?'Rotate '+sl:'Rotate'}</button>${it?`<button class="btn small" data-remove="${it.grp}">Remove ${sl}</button>`:''}<button class="btn small" data-addfurn="1">+ Add furniture</button><button class="btn small" id="reset">Reset layout</button></div>
 <p class="hint">${S.view==='photo'?'Drag a piece on your photo to move it.':S.view==='3d'&&G3.ok?'Drag furniture to move it; drag empty space to look around.':'Drag pieces to move them.'} Select one, then use arrow keys to nudge or R to rotate. The door, built-ins and furniture you already own stay put here; move them in <button type="button" class="linkbtn" data-go="1b">step 2, Layout</button>.</p>`}
 function render(){
-  panel.innerHTML=S.step===0?p0():S.step===1?(S.sub==='layout'?p1b():p1()):S.step===2?p2():S.step===4?p4():p3();
+  panel.innerHTML=S.step===5?p5():S.step===0?p0():S.step===1?(S.sub==='layout'?p1b():p1()):S.step===2?p2():S.step===4?p4():p3();
   const cur=S.step===1&&S.sub==='layout'?'1b':String(S.step),order=['1','1b','2','3','4'],ci=order.indexOf(cur);
   document.querySelectorAll('.steps button').forEach(b=>{const i=order.indexOf(b.dataset.go);b.classList.toggle('done',ci>i&&S.step!==4);if(b.dataset.go===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
-  $('#main').classList.toggle('s3',S.step===3);$('#main').classList.toggle('s0',S.step===0);$('#main').classList.toggle('snugmode',S.step===3&&!!S.layout&&!Object.keys(S.layout.items).length);document.body.classList.toggle('home',S.step===0);
+  $('#main').classList.toggle('s3',S.step===3);$('#main').classList.toggle('s0',S.step===0);$('#main').classList.toggle('s5',S.step===5);$('#main').classList.toggle('snugmode',S.step===3&&!!S.layout&&!Object.keys(S.layout.items).length);document.body.classList.toggle('home',S.step===0||S.step===5);
   applyView();renderBar();
 }
 function go(n){
@@ -2658,6 +2822,7 @@ document.addEventListener('change',e=>{if(e.target.id==='pvFile0'&&e.target.file
 document.addEventListener('fitroom-real-ready',()=>applyView());
 </script>
 <script src="track.js?v=4"></script>
+<script src="moving.js?v=3"></script>
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
 <script type="module" src="real.js"></script>
 
