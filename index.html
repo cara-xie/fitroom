@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<script>(function(){var q=location.search,m=q.match(/[?&]look=(\w+)/),inApp=/[?&]app=1/.test(q)||!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.fitroom),
-k=m?m[1]:(inApp?"sticker":"moove"),c=document.documentElement.classList;
-/* Website: Moove look (calm coastal paper, from Moove). iPhone app: sticker look. ?look=sticker|pro|pro2|pro3|moove overrides for previews. */
+<script>(function(){var q=location.search,m=q.match(/[?&]look=(\w+)/),
+k=m?m[1]:"moove",c=document.documentElement.classList;
+/* Website and iPhone app both use the Moove look (calm coastal paper, from Moove). ?look=sticker|pro|pro2|pro3|moove overrides for previews. */
 if(k==="moove")c.add("pro","mv");if(/^pro/.test(k))c.add("pro");if(k==="pro2")c.add("pal2");if(k==="pro3")c.add("pal3")})()</script>
 <head>
 <meta charset="utf-8">
