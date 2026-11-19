@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitroom Move — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Forum&family=Ysabeau+Infant:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F4F0D7;--ink:#121F26;--slate:#46707F;--sage:#7FA8A3;--ochre:#C08A2B;--card:#FBF8E8;--line:#dcd5b5;--ok:#3E7D5A;--warn:#B07A12;--no:#A8413A;--muted:#4b585d}
+*{box-sizing:border-box}
+html,body{margin:0;background:#e6e0c2;color:var(--ink);font-family:'Ysabeau Infant',system-ui,sans-serif;font-size:19px;line-height:1.45}
+.app{max-width:440px;margin:0 auto;min-height:100vh;background:var(--cream);padding:20px 20px 48px}
+h1,h2,h3{font-family:'Forum',Georgia,serif;font-weight:400;margin:0}
+h1{font-size:42px;line-height:1.05}
+h2{font-size:33px;line-height:1.1}
+h3{font-size:23px;line-height:1.2}
+.lede{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:23px;line-height:1.3;color:var(--slate);margin:8px 0 0}
+.top{display:flex;align-items:center;gap:8px;margin-bottom:26px}
+.logo{display:flex;align-items:center;gap:8px;font-family:'Forum',serif;font-size:23px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ochre)}
+.tag{margin-left:auto;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);border:1px solid var(--sage);border-radius:99px;padding:3px 10px}
+.bigbtn{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:14px;cursor:pointer;font:inherit;color:inherit}
+.bigbtn:hover{border-color:var(--slate)}
+.bigbtn .ic{flex:0 0 60px;height:60px;border-radius:18px;display:grid;place-items:center;background:var(--slate);color:#fff}
+.bigbtn.warm .ic{background:var(--ochre)}
+.bigbtn b{font-family:'Forum',serif;font-weight:400;font-size:25px;display:block;line-height:1.15}
+.bigbtn span{font-size:16px;color:var(--muted)}
+.back{background:none;border:0;font:inherit;color:var(--slate);font-size:18px;padding:6px 0;cursor:pointer;margin-bottom:12px}
+.pill{display:inline-block;border:0;border-radius:99px;background:var(--slate);color:#fff;font:inherit;font-weight:600;font-size:19px;padding:15px 26px;cursor:pointer;text-align:center}
+.pill.full{width:100%;margin-top:16px}
+.pill.ghost{background:transparent;color:var(--slate);border:1.5px solid var(--slate)}
+.pill.warm{background:var(--ochre)}
+.pill.small{font-size:16px;padding:9px 16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.chip{border:1.5px solid var(--sage);background:transparent;border-radius:99px;padding:9px 15px;font:inherit;font-size:17px;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:16px}
+.small{font-size:15px;color:var(--muted)}
+.label{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600}
+.scanner{position:relative;height:250px;border-radius:22px;background:radial-gradient(circle at 50% 40%,#2c414a,#141f25);overflow:hidden;margin-top:16px;color:#d8e7e3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.scanner.short{height:150px}
+.scanner .line{position:absolute;left:0;right:0;height:3px;background:var(--sage);box-shadow:0 0 22px 4px rgba(127,168,163,.7);animation:sweep 1.3s ease-in-out infinite}
+@keyframes sweep{0%{top:6%}50%{top:92%}100%{top:6%}}
+.br{position:absolute;width:30px;height:30px;border-color:#fff;border-style:solid;opacity:.85}
+.br.a{top:14px;left:14px;border-width:3px 0 0 3px}.br.b{top:14px;right:14px;border-width:3px 3px 0 0}.br.c{bottom:14px;left:14px;border-width:0 0 3px 3px}.br.d{bottom:14px;right:14px;border-width:0 3px 3px 0}
+.scanner p{margin:10px 0 0;font-size:17px;position:relative}
+.pts i{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffe9b0;box-shadow:0 0 8px #ffd77a;animation:pop 1.6s infinite}
+@keyframes pop{0%,100%{opacity:.15}50%{opacity:1}}
+.dims{display:flex;gap:8px;margin-top:10px}
+.dims label{flex:1;font-size:13px;color:var(--muted)}
+.dims input,.field input,.field select{width:100%;font:inherit;font-size:20px;padding:9px 10px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+.toggle{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:17px;cursor:pointer}
+.toggle input{width:22px;height:22px;accent-color:var(--slate)}
+.verdict{font-family:'Forum',serif;font-size:27px;line-height:1.15;margin-top:4px}
+.res{display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.res:first-of-type{border-top:0}
+.res .t{flex:1}
+.res b{display:block;font-size:19px}
+.res .m{font-size:16px;color:var(--muted)}
+.badge{flex:0 0 38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:19px}
+.ok{background:var(--ok)}.warn{background:var(--warn)}.no{background:var(--no)}
+.tip{background:#f2e4c2;border-radius:16px;padding:14px 16px;margin-top:14px;font-size:17px}
+.tip .pill{color:#fff!important;background:var(--slate)}
+.xbtn{border:0;background:none;color:var(--no);font-size:22px;line-height:1;cursor:pointer;padding:0 0 0 4px}
+.addbtn{background:none;border:0;color:var(--slate);font:inherit;font-size:17px;font-weight:600;cursor:pointer;padding:10px 0 0}
+.addform{border-top:1px dashed var(--line);margin-top:8px;padding-top:12px}
+.path{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;font-size:15px}
+.step{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 11px}
+.step i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.arr{color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--sage);border-radius:14px;overflow:hidden;margin-top:8px}
+.seg button{border:0;background:transparent;font:inherit;font-size:14px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.seg button.on{background:var(--ink);color:var(--cream)}
+.seg.big button{font-size:17px;padding:10px 18px}
+.how{font-size:14px;color:var(--muted);display:block;margin-top:3px;line-height:1.35}
+.item.sold>.n{color:var(--muted)}
+.sub{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;margin-top:16px}
+.qty{display:inline-flex;align-items:center;gap:8px;align-self:center}
+.qty button{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--sage);background:transparent;font:inherit;font-size:18px;line-height:1;cursor:pointer;color:var(--ink)}
+.opt{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:14px;margin-top:8px;background:#fff}
+.opt.best{border:2px solid var(--slate)}
+.opt.over{opacity:.55}
+.opt .o1{flex:1}
+.opt .o1 b{font-size:18px}
+.opt .d{font-size:14px;color:var(--muted);display:block}
+.opt .c{font-weight:700;font-size:18px}
+.best-tag{font-size:12px;font-weight:600;background:var(--slate);color:#fff;border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:2px}
+.modeseg{display:flex;margin-top:10px}.modeseg button{flex:1}
+textarea.listing{width:100%;min-height:130px;font:inherit;font-size:17px;padding:12px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);margin-top:10px}
+details{margin-top:16px}
+summary{cursor:pointer;color:var(--slate);font-size:17px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:3px}
+.room{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin-top:14px}
+.room-h{display:flex;align-items:center;gap:10px}
+.room-h h3{flex:1}
+.check{color:var(--ok);font-weight:700}
+.item{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-top:1px dashed var(--line);font-size:17px}
+.item:first-child{border-top:0}
+.item .n{flex:1}
+.item .d{font-size:14px;color:var(--muted);display:block}
+.ptag{font-size:13px;font-weight:600;border-radius:99px;padding:3px 10px;white-space:nowrap}
+.ptag.apart{background:#f2e1b8;color:#7a5410}.ptag.wrap{background:#d7e6e3;color:#2f5650}.ptag.box{background:#e3e0f0;color:#4a4470}
+.q{margin-top:12px;font-size:17px}
+.big-rec{display:flex;gap:12px;margin-top:12px}
+.big-rec>div{flex:1;background:var(--ink);color:var(--cream);border-radius:18px;padding:14px}
+.big-rec .label{color:var(--sage)}
+.big-rec b{font-family:'Forum',serif;font-weight:400;font-size:27px;display:block;line-height:1.1;margin-top:4px}
+.bars{margin-top:10px}
+.barrow{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:16px}
+.barrow .bn{flex:0 0 96px}
+.bar{flex:1;height:14px;border-radius:99px;background:#e7e1c4;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sage);border-radius:99px}
+.barrow.rec .bn{font-weight:700}
+.barrow.rec .bar i{background:var(--slate)}
+.barrow.over .bar i{background:#c98f86}
+.barrow .pc{flex:0 0 74px;text-align:right;color:var(--muted)}
+.math div{display:flex;justify-content:space-between;padding:5px 0;font-size:17px}
+.math div.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:9px;font-weight:700}
+.letter{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:18px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--ochre);color:#fff;display:grid;place-items:center;font-family:'Forum',serif;font-size:32px}
+.letter p{margin:12px 0 0;font-size:19px}
+.sign{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:26px;margin-top:10px;color:var(--slate)}
+.phone{display:block;margin-top:18px;background:var(--ochre);color:#fff;border-radius:22px;padding:18px;text-align:center;text-decoration:none}
+.phone small{display:block;font-size:15px;opacity:.9}
+.phone b{font-family:'Forum',serif;font-weight:400;font-size:32px}
+.helps{list-style:none;padding:0;margin:10px 0 0}
+.helps li{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:18px}
+.helps li:first-child{border-top:0}
+.helps .em{flex:0 0 30px;font-size:22px}
+.thanks{text-align:center;padding:10px 0}
+footer{margin-top:34px;text-align:center;font-size:14px;color:var(--muted)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HOME -->
+<section id="v-home">
+  <div class="top"><div class="logo"><span class="dot"></span>Fitroom Move</div><span class="tag">Demo</span></div>
+  <h1>Moving in?<br>Let's make it easier.</h1>
+  <p class="lede">Point your phone at your furniture. We'll do the measuring and the math.</p>
+
+  <button class="bigbtn" data-go="fit">
+    <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v17"/><path d="M3 21h18"/><circle cx="15" cy="12" r="1"/></svg></div>
+    <div><b>Will it fit through?</b><span>Doors, the elevator and the stairs, checked before moving day</span></div>
+  </button>
+
+  <button class="bigbtn" data-go="truck">
+    <div class="ic"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2z"/><path d="M13 9h4l4 4v3h-8z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div>
+    <div><b>What truck &amp; storage do I need?</b><span>Scan your rooms and get the right size, so you don't pay for empty space</span></div>
+  </button>
+
+  <button class="bigbtn" data-go="sell">
+    <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+    <div><b>Sell it or give it away</b><span>Not taking something? We'll write the listing or find it a new home</span></div>
+  </button>
+
+  <button class="bigbtn warm" data-go="call">
+    <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div>
+    <div><b>Call us</b><span>Rather talk to a person? I'll help you through it</span></div>
+  </button>
+  <footer>Built by Stanford students · Demo with sample data</footer>
+</section>
+
+<!-- FEATURE 1: FIT -->
+<section id="v-fit" hidden>
+  <button class="back" data-back>← Back</button>
+  <h2>Will it fit through?</h2>
+  <p class="lede">Scan a piece of furniture and pick its room. We'll check every door between that room and the truck.</p>
+  <div class="modebar"></div>
+  <div id="fit-body"></div>
+</section>
+
+<!-- FEATURE 2: TRUCK -->
+<section id="v-truck" hidden>
+  <button class="back" data-go="home">← Back</button>
+  <h2>What truck &amp; storage do I need?</h2>
+  <p class="lede">Scan each room and take a photo of what's in the closets. We'll plan your boxes and find the most affordable truck and storage that fit everything.</p>
+  <div id="truck-body" hidden></div><div id="truck2-body"></div>
+</section>
+
+<!-- FEATURE 4: SELL -->
+<section id="v-sell" hidden>
+  <button class="back" data-back>← Back</button>
+  <h2>Sell it or give it away</h2>
+  <p class="lede">Not bringing something? Take a photo. We'll write the listing for you, or help it find a new home.</p>
+  <div id="sell-body"></div>
+</section>
+
+<!-- FEATURE 3: CALL -->
+<section id="v-call" hidden>
+  <button class="back" data-back>← Back</button>
+  <h2>You don't have to do this alone.</h2>
+  <div class="letter">
+    <div class="avatar">C</div>
+    <p>Hi, I'm Cara, a student at Stanford.</p>
+    <p>Moving is a lot, especially when it's happening fast and there aren't many hands to help. If anything here feels confusing, or you'd just rather talk to a real person, please call me.</p>
+    <p>I'll listen to what's worrying you, and we'll figure out your move together, over the phone or in person.</p>
+    <div class="sign">— Cara</div>
+  </div>
+
+  <a class="phone" href="#call" id="phone-link"><small>Call or text me</small><b id="phone-num">(your number here)</b></a>
+
+  <div class="card">
+    <div class="label">What I can help with</div>
+    <ul class="helps">
+      <li><span class="em">📱</span><span>Come by and do the scan with you, so you don't have to work the app</span></li>
+      <li><span class="em">📏</span><span>Measure the tricky doorways and the elevator together</span></li>
+      <li><span class="em">🚚</span><span>Figure out the truck and storage size, and compare your options</span></li>
+      <li><span class="em">🤝</span><span>Find people to help carry on moving day</span></li>
+      <li><span class="em">📝</span><span>Write it all down as a simple plan you can print</span></li>
+    </ul>
+  </div>
+
+  <div class="card" id="cb-card">
+    <h3>Or I'll call you</h3>
+    <form id="cb">
+      <div class="field" style="margin-top:12px"><label>Your name</label><input id="cb-name" required placeholder="e.g. Linda"></div>
+      <div class="field" style="margin-top:10px"><label>Phone number</label><input id="cb-phone" required inputmode="tel" placeholder="(650) 555-0123"></div>
+      <div class="q">What's worrying you most?</div>
+      <div class="chips" id="cb-worry">
+        <button type="button" class="chip">Getting furniture inside</button>
+        <button type="button" class="chip">Truck &amp; storage</button>
+        <button type="button" class="chip">Not enough help</button>
+        <button type="button" class="chip">All of it</button>
+      </div>
+      <div class="q">Best time to call</div>
+      <div class="chips" id="cb-time">
+        <button type="button" class="chip on">Morning</button>
+        <button type="button" class="chip">Afternoon</button>
+        <button type="button" class="chip">Evening</button>
+      </div>
+      <button class="pill warm full" type="submit">Please call me</button>
+    </form>
+  </div>
+  <div class="card thanks" id="cb-thanks" hidden></div>
+  <footer>Demo · this form doesn't send anything yet</footer>
+</section>
+
+</div>
+
+<script>
+/* ---------- routing ---------- */
+const ROUTES={home:'home',fit:'fit','fit-result':'fit',truck:'truck',sell:'sell','sell-result':'sell',call:'call','call-done':'call'};
+const PARENT={fit:'home','fit-result':'fit',truck:'home',sell:'home','sell-result':'sell',call:'home','call-done':'call'};
+let cur='home';
+let MODE='out';
+function renderModebars(){document.querySelectorAll('.modebar').forEach(m=>m.innerHTML=`<div class="seg big modeseg">${[['out','Moving out'],['in','Moving in']].map(([k,l])=>`<button class="${MODE===k?'on':''}" data-movemode="${k}">${l}</button>`).join('')}</div>`);}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-movemode]');if(!b)return;MODE=b.dataset.movemode;renderModebars();renderFit();renderTruck2();});
+function show(){
+  let v=(location.hash||'#home').slice(1); if(!(v in ROUTES)) v='home';
+  if(v==='fit-result'&&!fit.dims){location.replace('#fit');return;}
+  if(v==='call-done'&&!cbDone){location.replace('#call');return;}
+  if(v==='sell-result'&&!sl.done){location.replace('#sell');return;}
+  cur=v;
+  ['home','fit','truck','sell','call'].forEach(n=>document.getElementById('v-'+n).hidden=(n!==ROUTES[v]));
+  if(v==='sell'){sl.stage='pick';renderSell();}
+  if(v==='sell-result'){sl.stage='result';renderSell();}
+  if(v==='fit'){fit.stage='pick';fit.newScan=false;renderFit();}
+  if(v==='fit-result'){fit.stage='result';renderFit();}
+  document.getElementById('cb-card').hidden=(v==='call-done');
+  document.getElementById('cb-thanks').hidden=(v!=='call-done');
+  window.scrollTo(0,0);
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]'); if(g){location.hash=g.dataset.go;return;} if(e.target.closest('[data-back]')){location.hash=PARENT[cur]||'home';}});
+window.addEventListener('hashchange',show);
+
+const cuft=(w,d,h)=>w*d*h/1728;
+const r0=x=>Math.round(x);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function scannerHTML(text,short){
+  let pts='';for(let i=0;i<14;i++){pts+=`<i style="left:${10+Math.random()*80}%;top:${12+Math.random()*76}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s"></i>`}
+  return `<div class="scanner ${short?'short':''}"><span class="br a"></span><span class="br b"></span><span class="br c"></span><span class="br d"></span><div class="pts">${pts}</div><div class="line"></div>
+  <svg width="${short?44:64}" height="${short?44:64}" viewBox="0 0 24 24" fill="none" stroke="#d8e7e3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+  <p>${text}</p></div>`;
+}
+
+/* ---------- FEATURE 1: FIT ---------- */
+const ITEMS={
+  sofa:{name:'Sofa',w:84,d:36,h:34,legs:4,dest:'living'},
+  armchair:{name:'Armchair',w:34,d:34,h:36,legs:4,dest:'bedroom'},
+  dresser:{name:'Dresser',w:60,d:20,h:32,dest:'bedroom'},
+  mattress:{name:'Queen mattress',w:60,d:80,h:12,dest:'bedroom'},
+  bookshelf:{name:'Bookshelf',w:32,d:12,h:72,dest:'office'},
+  table:{name:'Dining table',w:60,d:36,h:30,legs:26,dest:'living'},
+  custom:{name:'Your furniture',w:40,d:24,h:36}
+};
+let CUSTOM_NAME='';
+const BLD={frontW:36,frontH:80,aptW:32,aptH:80,elW:36,elH:84,cabW:68,cabD:51,cabH:96,stW:40,stL:40,hallW:40,bedDoor:30,bed2Door:28,officeDoor:30,otherDoor:30};
+const DEST={living:{name:'Living room'},dining:{name:'Dining room'},bedroom:{name:'Bedroom',k:'bedDoor'},bedroom2:{name:'Second bedroom',k:'bed2Door'},office:{name:'Office',k:'officeDoor'},other:{name:'Other room',k:'otherDoor'}};
+const fit={key:'sofa',stage:'pick',dims:null,legsOff:false,dest:'living'};
+
+let REC=null;
+const FI=()=>fit.key==='rec'?REC:ITEMS[fit.key];
+const ROOMDEST={'Living room':'living','Dining room':'dining','Bedroom':'bedroom','Kitchen':'other'};
+function sortedDims(){const d=fit.dims;let h=d.h;if(fit.legsOff&&FI().legs)h=Math.max(2,h-FI().legs);return [d.w,d.d,h].sort((x,y)=>x-y)}
+function hallCheck(){const [a,b,c]=sortedDims();const H=BLD.hallW,D=BLD.aptW;
+  if(a>H-1)return {s:'no',m:'Too wide for the hallway.'};
+  const L=Math.pow(Math.pow(H,2/3)+Math.pow(D,2/3),1.5)-a;
+  if(c<=L)return {s:'ok',m:'Makes the turn from the hallway into the door.'};
+  if(c<=L+30)return {s:'warn',m:'Tight turn into the door. Stand it on end to swing it around.'};
+  return {s:'no',m:`At ${c} in long, it can't make the turn between the hallway and the door.`};}
+function doorCheck(w,h){
+  const [a,b]=sortedDims();
+  if(a>w-1) return {s:'no',m:`Its thinnest side is ${a} in, and the door is ${w} in wide. Too tight to get through.`};
+  if(b>h-1) return {s:'warn',m:'Tip it at an angle to clear the top of the door.'};
+  if(a>w-3) return {s:'warn',m:`Fits, with less than 2 inches to spare. Cover the door frame.`};
+  return {s:'ok',m:`Fits, with ${w-a} inches to spare.`};
+}
+const worst=(...xs)=>xs.includes('no')?'no':xs.includes('warn')?'warn':'ok';
+function elevatorCheck(){
+  const door=doorCheck(BLD.elW,BLD.elH); const [a,b,c]=sortedDims(); const {cabW:cw,cabD:cd,cabH:ch}=BLD; let cab;
+  const floorOK=(a<=cw-1&&b<=cd-1)||(a<=cd-1&&b<=cw-1);
+  if(c<=ch-1&&floorOK) cab={s:'ok',m:'Stand it on its end inside the elevator.'};
+  else if(c<=Math.hypot(cw,cd)-1&&b<=ch-1) cab={s:'ok',m:'Lay it across the elevator, corner to corner.'};
+  else if(c<=Math.hypot(cw,cd,ch)-2) cab={s:'warn',m:'Only fits tilted corner to corner. Two people needed.'};
+  else cab={s:'no',m:`At ${c} in long, it's too big for the elevator.`};
+  if(door.s==='no') return door;
+  return {s:worst(door.s,cab.s),m:cab.s==='ok'&&door.s==='warn'?door.m+' '+cab.m:cab.m};
+}
+function stairsCheck(){
+  const [a,b,c]=sortedDims();
+  if(a>BLD.stW-1) return {s:'no',m:'Too wide for the stairwell.'};
+  if(c<=Math.hypot(BLD.stL,BLD.stW)-1) return {s:'ok',m:'Makes the turn at the landing.'};
+  if(c<=Math.hypot(BLD.stL,BLD.stW,30)) return {s:'warn',m:'Has to be tipped up to get around the landing. Needs two strong people.'};
+  return {s:'no',m:`At ${c} in long, it won't make the turn at the landing. Take the elevator.`};
+}
+function doorSVG(w,h,st){
+  const [a,b]=sortedDims(); const H=Math.max(h,b),s=78/H, W=Math.max(w,a)*s;
+  const col={ok:'#3E7D5A',warn:'#B07A12',no:'#A8413A'}[st];
+  const vw=Math.max(W,40)+8, dx=(vw-w*s)/2, ix=(vw-a*s)/2;
+  return `<svg width="${vw}" height="84" viewBox="0 0 ${vw} 84"><rect x="${dx}" y="${82-h*s}" width="${w*s}" height="${h*s}" fill="none" stroke="#121F26" stroke-width="2"/><rect x="${ix}" y="${82-b*s}" width="${a*s}" height="${b*s}" fill="${col}" fill-opacity=".45" stroke="${col}" stroke-width="1.5"/></svg>`;
+}
+const ICON={ok:'✓',warn:'!',no:'✕'};
+function resRow(title,r,svg){return `<div class="res">${svg||`<span class="badge ${r.s}">${ICON[r.s]}</span>`}<div class="t"><b>${title}</b><span class="m">${r.m}</span></div>${svg?`<span class="badge ${r.s}">${ICON[r.s]}</span>`:''}</div>`}
+
+function renderFit(){
+  const el=document.getElementById('fit-body');
+  if(fit.key==='rec'&&fit.stage==='pick')fit.key='sofa';
+  if(fit.stage==='pick'&&MODE==='in'&&!fit.newScan){
+    const recs=[];R2.forEach((r,i)=>r.items.forEach((x,j)=>{if(x.mode!=='sell')recs.push(`<button class="chip" data-rec="${i}:${j}">${x.n}</button>`)}));
+    el.innerHTML=`<div class="card"><h3>New to Fitroom?</h3>
+      <p class="small" style="margin:6px 0 0">No problem. Scan a piece of furniture now and we'll check its way in.</p>
+      <button class="pill full" id="fit-new">📷 Scan my furniture</button></div>
+      <div class="card"><h3>Used Fitroom to move out?</h3>
+      <div class="label" style="margin-top:8px">✓ Already measured when you moved out</div>
+      <p class="small" style="margin:6px 0 0">Everything you scanned for the move is saved, so there's nothing to measure again. Pick a piece to check its way into your new place.</p>
+      <div class="chips">${recs.join('')}</div>
+      <button class="addbtn" id="fit-new2">+ Scan something new</button></div>`;return;}
+  if(fit.stage==='pick'){
+    el.innerHTML=`<div class="card"><div class="label">What do you want to check?</div>
+      <div class="chips">${Object.entries(ITEMS).map(([k,v])=>`<button class="chip ${k===fit.key?'on':''}" data-item="${k}">${k==='custom'?'+ Something else':v.name}</button>`).join('')}</div>
+      ${fit.key==='custom'?`<div class="field" style="margin-top:14px"><label>What is it?</label><input id="custom-name" placeholder="e.g. piano, desk, recliner" value="${CUSTOM_NAME}"></div>`:''}
+      <button class="pill full" id="fit-scan">📷 Scan ${fit.key==='custom'?'it':'my '+FI().name.toLowerCase()}</button>
+      <p class="small" style="margin:12px 0 0">Walk slowly around it with your phone. Takes about 20 seconds.</p></div>`;
+    return;
+  }
+  if(fit.stage==='scanning'){el.innerHTML=scannerHTML(`Measuring your ${FI().name.toLowerCase()}…<br><span class="small" style="color:#a9c3be">Keep moving slowly around it</span>`);return;}
+  const it=FI();
+  const front=doorCheck(BLD.frontW,BLD.frontH), apt=doorCheck(BLD.aptW,BLD.aptH), el2=elevatorCheck(), st=stairsCheck();
+  const room=DEST[fit.dest], rn=room.name.toLowerCase();
+  const roomR=room.k?doorCheck(BLD[room.k],80):{s:'ok',m:'Open space, no door to get through.'};
+  const hall=hallCheck();
+  const inside=front.s!=='no'&&apt.s!=='no'&&hall.s!=='no'&&(el2.s!=='no'||st.s!=='no')&&roomR.s!=='no';
+  const allOk=inside&&front.s==='ok'&&apt.s==='ok'&&hall.s==='ok'&&(el2.s==='ok'||st.s==='ok')&&roomR.s==='ok';
+  const goal=MODE==='in'?`make it to the ${rn}`:`get out of the ${rn} and onto the truck`;
+  const verdict=allOk?`Good news: your ${it.name.toLowerCase()} will ${goal}.`:inside?`It'll ${goal}, but a few spots are tight.`:`It won't ${goal} the way it is now.`;
+  const via=el2.s!=='no'?['Elevator',el2]:['Stairs',st];
+  let steps=[['Front door',front],via,['Hallway',hall],['Apartment door',apt],[room.name,roomR]];
+  if(MODE==='out')steps=steps.reverse();
+  const path=`<div class="path">${steps.map(([n,r])=>`<span class="step"><i class="${r.s}"></i>${n}</span>`).join('<span class="arr">→</span>')}</div>`;
+  let tip='';
+  if(!inside&&it.legs&&!fit.legsOff) tip=`<div class="tip">💡 <b>Try taking the legs off.</b> That makes it ${it.legs} inches shorter, and that might be enough. <br><button class="pill small" id="tip-legs" style="margin-top:10px">Check without legs</button></div>`;
+  else if(!inside) tip=`<div class="tip">💡 Measure this one with a tape to be sure. If it still won't fit, you could <a href="#sell">sell it or give it away</a>, or <a href="#call">call me</a> and we'll figure it out together.</div>`;
+  const dm=fit.dims, h2=fit.legsOff&&it.legs?dm.h-it.legs:dm.h;
+  el.innerHTML=`
+  <div class="card"><div class="label">${fit.key==='rec'?'✓ Measured when you moved out':'✓ Scanned'} · ${it.name}</div>
+    <div class="dims">
+      <label>Width<input type="number" data-dim="w" value="${dm.w}"></label>
+      <label>Depth<input type="number" data-dim="d" value="${dm.d}"></label>
+      <label>Height<input type="number" data-dim="h" value="${dm.h}"></label>
+    </div><p class="small" style="margin:6px 0 0">Inches. Scans can be off by a little, so tap a number to fix it.</p>
+    ${it.legs?`<label class="toggle"><input type="checkbox" id="legs" ${fit.legsOff?'checked':''}> Take the legs off (−${it.legs} in${fit.legsOff?`, now ${h2} in tall`:''})</label>`:''}
+  </div>
+  <div class="card"><div class="label">${MODE==='in'?'Where is it going?':'Which room is it in now?'}</div>
+    <div class="chips">${Object.entries(DEST).map(([k,d])=>`<button class="chip ${k===fit.dest?'on':''}" data-dest="${k}">${d.name}</button>`).join('')}</div>
+  </div>
+  <div class="card"><div class="verdict">${verdict}</div>${path}
+    <div style="margin-top:6px"></div>
+    ${(()=>{const rows=[resRow('Building front door',front,doorSVG(BLD.frontW,BLD.frontH,front.s)),resRow('Elevator',el2),resRow('Stairs',st),resRow('Hallway',hall),resRow('Your apartment door',apt,doorSVG(BLD.aptW,BLD.aptH,apt.s)),room.k?resRow(room.name+' door',roomR,doorSVG(BLD[room.k],80,roomR.s)):resRow(room.name,roomR)];return (MODE==='out'?rows.reverse():rows).join('');})()}
+    ${tip}
+    <details><summary>Building sizes (from the leasing office)</summary>
+      <p class="small" style="margin:8px 0 0">Example numbers. The leasing office would fill these in once for the whole building.</p>
+      <div class="grid2">
+        ${[['frontW','Front door width'],['aptW','Apartment door width'],['elW','Elevator door width'],['cabW','Elevator inside width'],['cabD','Elevator inside depth'],['cabH','Elevator inside height'],['stW','Stairs width'],['stL','Stair landing depth'],['hallW','Hallway width'],['bedDoor','Bedroom door width'],['bed2Door','2nd bedroom door width'],['officeDoor','Office door width'],['otherDoor','Other room door width']].map(([k,l])=>`<div class="field"><label>${l}</label><input type="number" data-bld="${k}" value="${BLD[k]}"></div>`).join('')}
+      </div></details>
+  </div>
+  <button class="pill ghost full" id="fit-again">Scan something else</button>`;
+}
+document.getElementById('fit-body').addEventListener('click',async e=>{
+  const ds=e.target.closest('[data-dest]'); if(ds){fit.dest=ds.dataset.dest;renderFit();return;}
+  const rc=e.target.closest('[data-rec]'); if(rc){const [i,j]=rc.dataset.rec.split(':').map(Number);const x=R2[i].items[j];const lg=x.ap&&x.ap.t==='Legs off'?x.d[2]-x.ap.pk[2]:0;REC={name:x.n,w:x.d[0],d:x.d[1],h:x.d[2],legs:lg||undefined};fit.key='rec';fit.dims={w:REC.w,d:REC.d,h:REC.h};fit.legsOff=false;fit.dest=ROOMDEST[R2[i].name]||'living';location.hash='fit-result';return;}
+  if(e.target.id==='fit-new'){fit.newScan=true;fit.key='sofa';renderFit();return;}
+  if(e.target.id==='fit-new2'){fit.newScan=true;fit.key='custom';renderFit();return;}
+  const c=e.target.closest('[data-item]'); if(c){fit.key=c.dataset.item;renderFit();return;}
+  if(e.target.id==='fit-scan'){fit.stage='scanning';renderFit();await sleep(2200);const it=FI();fit.dims={w:it.w,d:it.d,h:it.h};fit.legsOff=false;fit.dest=it.dest||'living';location.hash='fit-result';return;}
+  if(e.target.id==='fit-again'){location.hash='fit';return;}
+  if(e.target.id==='tip-legs'){fit.legsOff=true;renderFit();return;}
+});
+document.getElementById('fit-body').addEventListener('input',e=>{
+  if(e.target.id==='custom-name'){CUSTOM_NAME=e.target.value.replace(/[<>&"]/g,'');ITEMS.custom.name=CUSTOM_NAME.trim()||'Your furniture';}
+});
+document.getElementById('fit-body').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='legs'){fit.legsOff=t.checked;renderFit();return;}
+  const v=parseFloat(t.value); if(!(v>0)) return;
+  if(t.dataset.dim){fit.dims[t.dataset.dim]=v;renderFit();}
+  if(t.dataset.bld){BLD[t.dataset.bld]=v;renderFit();document.querySelector('#fit-body details').open=true;}
+});
+
+/* ---------- FEATURE 2: TRUCK & STORAGE ---------- */
+// dims in inches; packed = size after taking apart
+const ROOMS=[
+  {name:'Living room',boxes:[4,8,14],items:[
+    {n:'Sofa',d:[84,36,34],p:'wrap'},
+    {n:'Armchair',d:[34,34,36],p:'wrap'},
+    {n:'Coffee table',d:[48,24,18],p:'wrap'},
+    {n:'TV stand',d:[60,16,24],p:'wrap'},
+    {n:'Bookshelf',d:[32,12,72],p:'wrap',note:'empty it first'},
+    {n:'Floor lamp',d:[14,14,60],p:'apart',pk:[14,14,30],note:'pole comes apart'}]},
+  {name:'Bedroom',boxes:[5,10,18],items:[
+    {n:'Queen bed frame',d:[62,84,44],p:'apart',pk:[84,12,44],note:'headboard and rails come apart'},
+    {n:'Queen mattress',d:[60,80,12],p:'wrap',note:'mattress bag'},
+    {n:'Dresser',d:[60,20,32],p:'wrap',note:'drawers stay in'},
+    {n:'Nightstand',d:[24,18,26],p:'wrap',q:2}]},
+  {name:'Dining room',boxes:[2,4,8],items:[
+    {n:'Dining table',d:[60,36,30],p:'apart',pk:[60,36,8],note:'legs come off'},
+    {n:'Dining chair',d:[18,20,36],p:'wrap',q:4}]},
+  {name:'Kitchen',boxes:[6,12,20],items:[]}
+];
+const BOX_CUFT=3; // medium box ~18x18x16 in
+const GAP=0.20;
+const TRUCKS=[{n:'Cargo van',v:245},{n:'10 ft truck',v:402},{n:'15 ft truck',v:764},{n:'20 ft truck',v:1016},{n:'26 ft truck',v:1684}];
+const STORAGE=[{n:'5 × 5 ft',v:200},{n:'5 × 10 ft',v:400},{n:'10 × 10 ft',v:800},{n:'10 × 15 ft',v:1200},{n:'10 × 20 ft',v:1600}];
+const LEVELS=['A little','Normal','Packed'];
+const tr={rooms:ROOMS.map(()=>({state:'new',level:1}))};
+const PTXT={wrap:'Wrap in blanket',apart:'Take apart',box:'Box it'};
+
+function totals(){
+  let furn=0,assembled=0,boxes=0,scanned=0;
+  ROOMS.forEach((r,i)=>{const s=tr.rooms[i]; if(s.state!=='done')return; scanned++;
+    r.items.forEach(it=>{const q=it.q||1; const a=cuft(...it.d)*q; assembled+=a; furn+=it.pk?cuft(...it.pk)*q:a;});
+    boxes+=r.boxes[s.level];});
+  const gaps=furn*GAP, boxVol=boxes*BOX_CUFT, total=furn+gaps+boxVol;
+  return {furn,assembled,saved:assembled-furn,gaps,boxes,boxVol,total,scanned};
+}
+function pick(list,total){return list.find(x=>total/x.v<=0.85)||list[list.length-1]}
+function barList(list,total,rec){return list.map(x=>{const p=total/x.v;const cls=x===rec?'rec':p>1?'over':'';return `<div class="barrow ${cls}"><span class="bn">${x.n}</span><span class="bar"><i style="width:${Math.min(100,p*100)}%"></i></span><span class="pc">${p>1?'too small':r0(p*100)+'% full'}</span></div>`}).join('')}
+
+function renderTruck(){
+  const el=document.getElementById('truck-body');
+  let h=`<button class="pill ghost full" id="scan-all" style="margin-top:18px">Scan all rooms (quick demo)</button>`;
+  ROOMS.forEach((r,i)=>{const s=tr.rooms[i];
+    h+=`<div class="room"><div class="room-h"><h3>${r.name}</h3>${s.state==='done'?'<span class="check">✓ Scanned</span>':s.state==='new'?`<button class="pill small" data-scan="${i}">📷 Scan</button>`:''}</div>`;
+    if(s.state==='scanning') h+=scannerHTML('Finding your furniture…',true);
+    if(s.state==='done'){
+      h+= r.items.length? `<div style="margin-top:8px">`+r.items.map((it,j)=>`<div class="item"><span class="n">${it.q?it.q+' × ':''}${it.n}<span class="d">${it.d.join(' × ')} in${it.note?' · '+it.note:''}${it.added?' · added by you':''}</span></span><span class="ptag ${it.p}">${PTXT[it.p]}</span>${it.added?`<button class="xbtn" data-del="${i}:${j}" aria-label="Remove">×</button>`:''}</div>`).join('')+`</div>`
+        : `<p class="small" style="margin:8px 0 0">No big furniture found. Most of the kitchen goes in boxes.</p>`;
+      h+= s.adding? `<div class="addform"><div class="field"><label>What is it?</label><input id="add-n-${i}" placeholder="e.g. piano, desk, treadmill"></div>
+        <button class="pill small ghost" data-addscan="${i}" style="margin-top:10px">📷 Scan it</button>
+        <div class="dims"><label>Width<input type="number" id="add-w-${i}"></label><label>Depth<input type="number" id="add-d-${i}"></label><label>Height<input type="number" id="add-h-${i}"></label></div>
+        <p class="small" style="margin:6px 0 0">Scan it, or type the size in inches.</p>
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="pill small" data-addsave="${i}">Add it</button><button class="pill small ghost" data-addcancel="${i}">Cancel</button></div></div>`
+        : `<button class="addbtn" data-addopen="${i}">+ Add something we missed</button>`;
+      h+=`<div class="q">How full are the ${r.name==='Kitchen'?'cabinets':'closets and drawers'}?</div><div class="chips">${LEVELS.map((l,j)=>`<button class="chip ${s.level===j?'on':''}" data-level="${i}:${j}">${l}</button>`).join('')}</div>
+      <p class="small" style="margin:6px 0 0">≈ ${r.boxes[s.level]} boxes. The camera can't see inside closets, so we ask.</p>`;
+    }
+    h+=`</div>`;});
+  const T=totals();
+  if(T.scanned){
+    const truck=pick(TRUCKS,T.total), st=pick(STORAGE,T.total);
+    h+=`<div class="card"><div class="label">Your move${T.scanned<ROOMS.length?` · ${T.scanned} of ${ROOMS.length} rooms so far`:''}</div>
+      <div class="big-rec"><div><span class="label">Truck</span><b>${truck.n}</b></div><div><span class="label">Storage unit</span><b>${st.n}</b></div></div>
+      <p class="small" style="margin:12px 0 0">The smallest sizes that fit everything with a little room left over, so you don't pay for empty space.</p>
+      <h3 style="margin-top:18px">How full each truck would be</h3><div class="bars">${barList(TRUCKS,T.total,truck)}</div>
+      <h3 style="margin-top:18px">How full each storage unit would be</h3><div class="bars">${barList(STORAGE,T.total,st)}</div>
+      <h3 style="margin-top:18px">How we got this</h3>
+      <div class="math">
+        <div><span>Furniture (after taking apart)</span><span>${r0(T.furn)} cu ft</span></div>
+        <div><span>+ 20% for gaps between pieces</span><span>${r0(T.gaps)} cu ft</span></div>
+        <div><span>${T.boxes} medium boxes</span><span>${r0(T.boxVol)} cu ft</span></div>
+        <div class="tot"><span>Total</span><span>${r0(T.total)} cu ft</span></div>
+      </div>
+      ${T.saved>1?`<div class="tip">💡 Taking apart the bed, table and lamp saves about <b>${r0(T.saved)} cu ft</b>. That can be the difference between two truck sizes.</div>`:''}
+      <p class="small" style="margin:14px 0 0">Truck sizes are U-Haul's published cargo volumes; storage units assume an 8 ft ceiling. The 20% gap allowance and 3 cu ft per box are our rough estimates.</p>
+    </div>`;
+  }
+  el.innerHTML=h;
+}
+async function scanRoom(i){tr.rooms[i].state='scanning';renderTruck();await sleep(1800);tr.rooms[i].state='done';renderTruck();}
+document.getElementById('truck-body').addEventListener('click',async e=>{
+  const s=e.target.closest('[data-scan]'); if(s){scanRoom(+s.dataset.scan);return;}
+  const ad=e.target.closest('[data-addopen]'); if(ad){const i=ad.dataset.addopen;tr.rooms[i].adding=true;renderTruck();document.getElementById('add-n-'+i).focus();return;}
+  const ac=e.target.closest('[data-addcancel]'); if(ac){tr.rooms[ac.dataset.addcancel].adding=false;renderTruck();return;}
+  const asn=e.target.closest('[data-addscan]'); if(asn){const i=asn.dataset.addscan;asn.textContent='Measuring…';await sleep(1200);[['w',40],['d',24],['h',36]].forEach(([k,v])=>{const f=document.getElementById(`add-${k}-${i}`);if(f&&!f.value)f.value=v;});asn.textContent='✓ Measured';return;}
+  const sv=e.target.closest('[data-addsave]'); if(sv){const i=+sv.dataset.addsave;const g=k=>document.getElementById(`add-${k}-${i}`).value;const n=g('n').replace(/[<>&"]/g,'').trim();const d=['w','d','h'].map(k=>parseFloat(g(k)));if(!n||d.some(x=>!(x>0))){sv.textContent='Add a name and all 3 sizes';return;}ROOMS[i].items.push({n,d,p:'wrap',added:true});tr.rooms[i].adding=false;renderTruck();return;}
+  const dl=e.target.closest('[data-del]'); if(dl){const [i,j]=dl.dataset.del.split(':').map(Number);ROOMS[i].items.splice(j,1);renderTruck();return;}
+  const l=e.target.closest('[data-level]'); if(l){const [i,j]=l.dataset.level.split(':').map(Number);tr.rooms[i].level=j;renderTruck();return;}
+  if(e.target.id==='scan-all'){ROOMS.forEach((_,i)=>{if(tr.rooms[i].state==='new')tr.rooms[i].state='scanning'});renderTruck();await sleep(1800);tr.rooms.forEach(r=>{if(r.state==='scanning')r.state='done'});renderTruck();}
+});
+
+/* ---------- FEATURE 2 (v2): BOXES, TRUCK & STORAGE ---------- */
+const BOXES={
+  small:{n:'Small box',s:'16 × 12 × 12 in',v:1.5,use:'books, tools, canned food'},
+  medium:{n:'Medium box',s:'18 × 18 × 16 in',v:3,use:'kitchenware, shoes, electronics'},
+  large:{n:'Large box',s:'18 × 18 × 24 in',v:4.5,use:'pillows, folded clothes, linens'},
+  xl:{n:'Extra-large box',s:'24 × 18 × 24 in',v:6,use:'comforters and cushions'},
+  wardrobe:{n:'Wardrobe box',s:'24 × 24 × 40 in, with a hanging bar',v:13.3,use:'hanging clothes, 2–3 ft of rod each'},
+  dish:{n:'Dish pack',s:'18 × 18 × 28 in, double-wall',v:5.25,use:'plates, glasses and china'}
+};
+const R2=[
+  {name:'Living room',photo:'shelves and cabinets',items:[
+    {n:'Sofa',d:[84,36,34],how:'Plastic sofa cover, then furniture pads held with stretch wrap. Cushions go in a large box.',ap:{t:'Legs off',pk:[84,36,30]}},
+    {n:'Armchair',d:[34,34,36],how:'Plastic chair cover, then furniture pads.',ap:{t:'Legs off',pk:[34,34,32]}},
+    {n:'Coffee table',d:[48,24,18],how:'Furniture pads held with stretch wrap.',ap:{t:'Legs off',pk:[48,24,6]}},
+    {n:'TV stand',d:[60,16,24],how:'Empty it. Furniture pads, with stretch wrap keeping the doors shut.'},
+    {n:'Bookshelf',d:[32,12,72],how:'Empty it and take out the loose shelves. Furniture pads.'},
+    {n:'Floor lamp',d:[14,14,60],how:'Bulb out. The shade goes in a large box.',ap:{t:'Pole apart',pk:[14,14,30]}}],
+   stuff:[['Books (about 3 ft of shelf)','small',4],['Decor and picture frames','medium',2],['Electronics and cables','medium',1],['Throw blankets and pillows','large',2]]},
+  {name:'Bedroom',photo:'closet',items:[
+    {n:'Queen bed frame',d:[62,84,44],how:'Screws go in a labeled bag taped to the frame. Furniture pads and stretch wrap.',ap:{t:'Take apart',pk:[84,12,44]}},
+    {n:'Queen mattress',d:[60,80,12],how:'Mattress bag. Travels standing on its side.'},
+    {n:'Dresser',d:[60,20,32],how:'Drawers held shut with stretch wrap over furniture pads.'},
+    {n:'Nightstand',d:[24,18,26],q:2,how:'Furniture pads.'}],
+   stuff:[['Hanging clothes (about 5 ft of rod)','wardrobe',2],['Folded clothes','large',3],['Shoes','medium',2],['Bedding and comforters','xl',2]]},
+  {name:'Dining room',photo:'china cabinet',items:[
+    {n:'Dining table',d:[60,36,30],how:'Screws go in a labeled bag. Furniture pads on the top and legs.',ap:{t:'Legs off',pk:[60,36,8]}},
+    {n:'Dining chair',d:[18,20,36],q:4,how:'Furniture pads. Stack them in pairs.'}],
+   stuff:[['Plates and serving dishes','dish',1],['Glasses','dish',1],['Table linens','large',1]]},
+  {name:'Kitchen',photo:'cabinets and pantry',items:[],
+   stuff:[['Dishes and glasses','dish',2],['Pots and pans','medium',3],['Pantry food and cans','small',3],['Small appliances','medium',2]]}
+];
+R2.forEach(r=>r.items.forEach(it=>{it.mode=it.ap?'apart':'keep';}));
+const TRUCKS2=[{n:'10 ft truck',v:402,base:19.95},{n:'15 ft truck',v:764,base:29.95},{n:'20 ft truck',v:1016,base:39.95},{n:'26 ft truck',v:1684,base:49.95}];
+const STOR2=[{n:'5 × 5 ft',v:200,p:35},{n:'5 × 10 ft',v:400,p:60},{n:'10 × 10 ft',v:800,p:115},{n:'10 × 15 ft',v:1200,p:150},{n:'10 × 20 ft',v:1600,p:204}];
+const PER_MILE=1.19, FILL=0.85;
+const t2={dist:10,rooms:R2.map(r=>({state:'new',photo:'none',adding:false,qty:r.stuff.map(x=>x[2])}))};
+const money=x=>'$'+Math.round(x).toLocaleString();
+const listify=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+function dimsFor(it,m){return m==='apart'&&it.ap?it.ap.pk:it.d}
+function vol2(it,m){return m==='sell'?0:cuft(...dimsFor(it,m))*(it.q||1)}
+function calc2(over){
+  let furn=0,boxVol=0,boxes={},nBoxes=0,scanned=0,photos=0,mattress=0,apartN=0;
+  R2.forEach((r,i)=>{const s=t2.rooms[i];if(s.state!=='done')return;scanned++;
+    r.items.forEach(it=>{const m=over?over(it):it.mode;furn+=vol2(it,m);if(m!=='sell'&&/mattress/i.test(it.n))mattress+=(it.q||1);if(m==='apart')apartN++;});
+    if(s.photo==='done'){photos++;r.stuff.forEach((x,j)=>{const q=s.qty[j];if(!q)return;boxes[x[1]]=(boxes[x[1]]||0)+q;nBoxes+=q;boxVol+=q*BOXES[x[1]].v;});}});
+  const gaps=furn*0.2;return {furn,gaps,boxVol,boxes,nBoxes,total:furn+gaps+boxVol,scanned,photos,mattress,apartN};
+}
+function truckPlan(total){
+  let opts=TRUCKS2.map(t=>{const trips=Math.max(1,Math.ceil(total/(t.v*FILL)));const miles=t2.dist*2*trips;return Object.assign({},t,{trips,miles,cost:t.base+miles*PER_MILE});});
+  opts=opts.filter((o,k)=>o.trips<=3||k===opts.length-1);
+  const best=opts.slice().sort((a,b)=>a.cost-b.cost||a.trips-b.trips)[0];return {opts,best};
+}
+function storPlan(total){return STOR2.find(x=>total/x.v<=FILL)||STOR2[STOR2.length-1]}
+function itemRow2(i,j,it){
+  const modes=it.ap?[['apart',it.ap.t],['whole','Keep whole'],['sell','Sell / give away']]:[['keep','Bring it'],['sell','Sell / give away']];
+  const seg=`<div class="seg">${modes.map(([m,l])=>`<button class="${it.mode===m?'on':''}" data-mode="${i}:${j}:${m}">${l}</button>`).join('')}</div>`;
+  const how=it.mode==='sell'?`Not coming with you. <a href="#sell">List it or give it away →</a>`:(it.mode==='whole'?`Kept whole, and that's fine: we've planned room for it at full size. `:'')+(it.mode==='sell'?'':it.how);
+  return `<div class="item ${it.mode==='sell'?'sold':''}"><span class="n">${it.q?it.q+' × ':''}${it.n}<span class="d">${dimsFor(it,it.mode).join(' × ')} in${it.mode==='apart'?' once taken apart':''}${it.added?' · added by you':''}</span><span class="how">${how}</span>${seg}</span>${it.added?`<button class="xbtn" data-t2del="${i}:${j}" aria-label="Remove">×</button>`:''}</div>`;
+}
+function addForm2(i){return `<div class="addform"><div class="field"><label>What is it?</label><input id="t2n-${i}" placeholder="e.g. piano, desk, treadmill"></div>
+  <button class="pill small ghost" data-t2measure="${i}" style="margin-top:10px">📷 Scan it</button>
+  <div class="dims"><label>Width<input type="number" id="t2w-${i}"></label><label>Depth<input type="number" id="t2d-${i}"></label><label>Height<input type="number" id="t2h-${i}"></label></div>
+  <p class="small" style="margin:6px 0 0">Scan it, or type the size in inches.</p>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="pill small" data-t2save="${i}">Add it</button><button class="pill small ghost" data-t2cancel="${i}">Cancel</button></div></div>`}
+function summary2(T){
+  const tp=truckPlan(T.total),tb=tp.best,st=storPlan(T.total);
+  const W=calc2(it=>it.mode==='sell'?'sell':(it.ap?'whole':it.mode));
+  const A=calc2(it=>it.mode==='sell'?'sell':(it.ap?'apart':it.mode));
+  const K=calc2(it=>it.mode==='sell'?(it.ap?'apart':'keep'):it.mode);
+  const done=[];R2.forEach((r,i)=>{if(t2.rooms[i].state==='done')r.items.forEach(it=>done.push(it))});
+  let tips='';
+  const saved=W.total-T.total;
+  if(saved>1){const tw=truckPlan(W.total).best,sw=storPlan(W.total);let m=`Taking things apart saves about <b>${r0(saved)} cu ft</b>.`;
+    if(sw.n!==st.n)m+=` That means a ${st.n} storage unit instead of ${sw.n}: about <b>${money(sw.p-st.p)} less each month</b>.`;
+    if(tw.cost-tb.cost>=1)m+=` The truck comes out about ${money(tw.cost-tb.cost)} cheaper, too.`;
+    tips+=`<div class="tip">💡 ${m}</div>`;}
+  const whole=done.filter(it=>it.ap&&it.mode==='whole').map(it=>'the '+it.n.toLowerCase());
+  if(whole.length) tips+=`<div class="tip">🛏️ Keeping ${listify(whole)} whole adds about ${r0(T.total-A.total)} cu ft. That's okay: the sizes above already make room for it.</div>`;
+  const sold=done.filter(it=>it.mode==='sell').map(it=>'the '+it.n.toLowerCase());
+  if(sold.length) tips+=`<div class="tip">🏷️ Selling or giving away ${listify(sold)} frees up about ${r0(K.total-T.total)} cu ft. <a href="#sell">List ${sold.length>1?'them':'it'} →</a></div>`;
+  const two=tb.trips>1?(()=>{const one=tp.opts.find(o=>o.trips===1);return one?`<p class="small" style="margin:8px 0 0">${tb.trips} trips is cheapest, but it means more driving and lifting. The ${one.n} does it in one trip for about ${money(one.cost-tb.cost)} more.</p>`:''})():'';
+  return `<div class="card"><div class="label">Your move plan${T.scanned<R2.length?` · ${T.scanned} of ${R2.length} rooms so far`:''}</div>
+    <div class="big-rec"><div><span class="label">Truck</span><b>${tb.n}</b><span class="small" style="color:#cfe0dc">about ${money(tb.cost)}</span></div><div><span class="label">Storage</span><b>${st.n}</b><span class="small" style="color:#cfe0dc">about ${money(st.p)}/month</span></div></div>
+    ${tips}
+    <h3 style="margin-top:20px">Most affordable truck</h3>
+    <div class="field" style="margin-top:8px"><label>How far are you moving? (miles)</label><input type="number" id="t2-dist" value="${t2.dist}"></div>
+    ${tp.opts.map(o=>`<div class="opt ${o===tb?'best':''}"><span class="o1"><b>${o.n}</b>${o===tb?'<span class="best-tag">Best value</span>':''}<span class="d">${o.trips} trip${o.trips>1?'s':''} · ${r0(o.miles)} miles · ${r0(T.total/o.trips/o.v*100)}% full</span></span><span class="c">${money(o.cost)}</span></div>`).join('')}
+    ${two}
+    <h3 style="margin-top:20px">Most affordable storage</h3>
+    ${STOR2.map(x=>{const p=T.total/x.v;return `<div class="opt ${x===st?'best':''} ${p>1?'over':''}"><span class="o1"><b>${x.n}</b>${x===st?'<span class="best-tag">Best value</span>':''}<span class="d">${p>1?'Too small':r0(p*100)+'% full'}</span></span><span class="c">${money(x.p)}/mo</span></div>`}).join('')}
+    <h3 style="margin-top:20px">Your packing list</h3>
+    ${T.photos?Object.entries(T.boxes).map(([k,q])=>`<div class="item"><span class="n">${q} × ${BOXES[k].n}<span class="d">${BOXES[k].s} · for ${BOXES[k].use}</span></span></div>`).join(''):`<p class="small" style="margin:6px 0 0">Take a photo of the closets to get your box list.</p>`}
+    <div class="item"><span class="n">Furniture pads and stretch wrap<span class="d">to protect wood and fabric</span></span></div>
+    ${T.mattress?`<div class="item"><span class="n">${T.mattress} × Mattress bag</span></div>`:''}
+    ${T.apartN?`<div class="item"><span class="n">Zip bags and a marker<span class="d">screws from each piece go in a labeled bag taped to it</span></span></div>`:''}
+    <p class="small" style="margin:8px 0 0">Pack heavy things in small boxes and light things in big ones, and label every box with its room.</p>
+    ${loadOrder(T)}
+    <h3 style="margin-top:20px">How we got this</h3>
+    <div class="math">
+      <div><span>Furniture, as you chose</span><span>${r0(T.furn)} cu ft</span></div>
+      <div><span>+ 20% for gaps between pieces</span><span>${r0(T.gaps)} cu ft</span></div>
+      <div><span>${T.nBoxes} boxes</span><span>${r0(T.boxVol)} cu ft</span></div>
+      <div class="tot"><span>Total</span><span>${r0(T.total)} cu ft</span></div>
+    </div>
+    <p class="small" style="margin:14px 0 0">Box sizes: standard sizes sold by U-Haul and other suppliers. Truck: U-Haul in-town base rates ($19.95–$49.95 a day by size) plus about $1.19 a mile, counting each trip there and back; gas, damage coverage and taxes are extra. Storage: Extra Space Storage's 2026 national average monthly prices for standard units; local prices vary. Coming later: live quotes from truck and storage partners near you.</p>
+  </div>`;
+}
+const LOADG={'Sofa':'heavy','TV stand':'heavy','Bookshelf':'heavy','Dresser':'heavy','Queen bed frame':'long','Queen mattress':'long','Dining table':'long'};
+function loadOrder(T){
+  const g={heavy:[],long:[],small:[]};
+  R2.forEach((r,i)=>{if(t2.rooms[i].state!=='done')return;r.items.forEach(it=>{if(it.mode==='sell')return;const k=LOADG[it.n]||(it.added&&vol2(it,it.mode)>20?'heavy':'small');g[k].push({n:(it.q?it.q+' × ':'')+it.n,room:r.name});});});
+  const steps=[
+    {t:'Heaviest furniture',d:'Against the wall closest to the cab, low and tight',l:g.heavy},
+    {t:'Long pieces',d:'Standing upright along the side walls',l:g.long},
+    {t:'Smaller furniture',d:'Fills the gaps so nothing shifts',l:g.small},
+    {t:T.nBoxes?`${T.nBoxes} boxes`:'Boxes',d:'Heaviest on the bottom, light ones on top',dIn:'Each one to the room on its label',l:[]},
+    {t:'Things you need first',d:'Last on, first off: bedding, toiletries and chargers',dIn:'First off: bedding, toiletries and chargers',l:[]}
+  ].filter(x=>x.l.length||!x.d.startsWith('Against')&&!x.d.startsWith('Standing')&&!x.d.startsWith('Fills'));
+  const inn=false, seq=steps;
+  return `<h3 style="margin-top:20px">${inn?'Unloading order':'Loading order'}</h3>
+    <p class="small" style="margin:6px 0 0">${inn?'The exact reverse of loading: what went on last comes off first. Each piece goes straight to its room.':'Heavy first, so the load is stable. At the new place, unload in the exact reverse, so the things you need first come off first.'}</p>
+    ${seq.map((x,k)=>`<div class="item"><span class="n"><b>${k+1}. ${x.t}</b><span class="d">${inn?(x.dIn||(x.l.length?'Straight to its room':x.d)):x.d}</span>${x.l.length?`<span class="how">${x.l.map(y=>inn?`${y.n} → ${y.room}`:y.n).join(' · ')}</span>`:''}</span></div>`).join('')}`;
+}
+function renderTruck2(){
+  const el=document.getElementById('truck2-body');
+  let h=`<button class="pill ghost full" id="t2-all" style="margin-top:18px">Scan all rooms (quick demo)</button>`;
+  R2.forEach((r,i)=>{const s=t2.rooms[i];
+    h+=`<div class="room"><div class="room-h"><h3>${r.name}</h3>${s.state==='done'?'<span class="check">✓ Scanned</span>':s.state==='new'?`<button class="pill small" data-t2scan="${i}">📷 Scan</button>`:''}</div>`;
+    if(s.state==='scanning')h+=scannerHTML('Measuring your furniture…',true);
+    if(s.state==='done'){
+      h+=`<div class="sub">Furniture</div>`;
+      h+=r.items.length?r.items.map((it,j)=>itemRow2(i,j,it)).join(''):`<p class="small" style="margin:6px 0 0">No big furniture here.</p>`;
+      h+=s.adding?addForm2(i):`<button class="addbtn" data-t2open="${i}">+ Add something we missed</button>`;
+      h+=`<div class="sub">What's in the ${r.photo}</div>`;
+      if(s.photo==='none')h+=`<button class="pill small" data-t2photo="${i}" style="margin-top:8px">📷 Take a photo of the ${r.photo}</button><p class="small" style="margin:6px 0 0">The scan can't see inside, so one photo helps us plan the boxes.</p>`;
+      if(s.photo==='analyzing')h+=scannerHTML(`Looking at the ${r.photo}…`,true);
+      if(s.photo==='done')h+=r.stuff.map((x,j)=>{const b=BOXES[x[1]];return `<div class="item"><span class="n">${x[0]}<span class="d">Pack in: ${b.n} · ${b.s}</span></span><span class="qty"><button data-t2q="${i}:${j}:-1" aria-label="Fewer">−</button><b>${s.qty[j]}</b><button data-t2q="${i}:${j}:1" aria-label="More">+</button></span></div>`}).join('')+`<p class="small" style="margin:6px 0 0">Not quite right? Tap − or + to fix the count.</p>`;
+    }
+    h+=`</div>`;});
+  const T=calc2(); if(T.scanned)h+=summary2(T);
+  el.innerHTML=h;
+}
+document.getElementById('truck2-body').addEventListener('click',async e=>{
+  const q=k=>e.target.closest('['+k+']'); let b;
+  if(e.target.id==='t2-all'){t2.rooms.forEach(s=>{if(s.state==='new')s.state='scanning'});renderTruck2();await sleep(1800);t2.rooms.forEach(s=>{if(s.state==='scanning')s.state='done';if(s.photo==='none')s.photo='analyzing'});renderTruck2();await sleep(1400);t2.rooms.forEach(s=>{if(s.photo==='analyzing')s.photo='done'});renderTruck2();return;}
+  if(b=q('data-t2scan')){const i=+b.dataset.t2scan;t2.rooms[i].state='scanning';renderTruck2();await sleep(1800);t2.rooms[i].state='done';renderTruck2();return;}
+  if(b=q('data-t2photo')){const i=+b.dataset.t2photo;t2.rooms[i].photo='analyzing';renderTruck2();await sleep(1600);t2.rooms[i].photo='done';renderTruck2();return;}
+  if(b=q('data-t2q')){const [i,j,d]=b.dataset.t2q.split(':').map(Number);t2.rooms[i].qty[j]=Math.max(0,t2.rooms[i].qty[j]+d);renderTruck2();return;}
+  if(b=q('data-mode')){const [i,j,m]=b.dataset.mode.split(':');R2[+i].items[+j].mode=m;renderTruck2();return;}
+  if(b=q('data-t2open')){const i=b.dataset.t2open;t2.rooms[i].adding=true;renderTruck2();document.getElementById('t2n-'+i).focus();return;}
+  if(b=q('data-t2cancel')){t2.rooms[b.dataset.t2cancel].adding=false;renderTruck2();return;}
+  if(b=q('data-t2measure')){const i=b.dataset.t2measure;b.textContent='Measuring…';await sleep(1200);[['w',40],['d',24],['h',36]].forEach(([k,v])=>{const f=document.getElementById(`t2${k}-${i}`);if(f&&!f.value)f.value=v;});b.textContent='✓ Measured';return;}
+  if(b=q('data-t2save')){const i=+b.dataset.t2save;const g=k=>document.getElementById(`t2${k}-${i}`).value;const n=g('n').replace(/[<>&"]/g,'').trim();const d=['w','d','h'].map(k=>parseFloat(g(k)));if(!n||d.some(x=>!(x>0))){b.textContent='Add a name and all 3 sizes';return;}R2[i].items.push({n,d,how:'Furniture pads held with stretch wrap.',added:true,mode:'keep'});t2.rooms[i].adding=false;renderTruck2();return;}
+  if(b=q('data-t2del')){const [i,j]=b.dataset.t2del.split(':').map(Number);R2[i].items.splice(j,1);renderTruck2();return;}
+});
+document.getElementById('truck2-body').addEventListener('change',e=>{if(e.target.id==='t2-dist'){const v=parseFloat(e.target.value);if(v>0){t2.dist=v;renderTruck2();}}});
+
+/* ---------- FEATURE 4: SELL OR GIVE AWAY ---------- */
+const SELLP={sofa:[150,300],armchair:[50,120],dresser:[80,200],mattress:null,bookshelf:[30,80],table:[100,250],custom:[40,150]};
+const COND=[['new','Like new',1.3],['good','Good',1],['fair','Fair',0.6]];
+const sl={key:'sofa',stage:'pick',cond:'good',way:'sell',done:false};
+const r5=x=>Math.round(x/5)*5;
+function renderSell(){
+  const el=document.getElementById('sell-body');const it=ITEMS[sl.key];
+  if(sl.stage==='pick'){
+    el.innerHTML=`<div class="card"><div class="label">What are you letting go of?</div>
+      <div class="chips">${Object.entries(ITEMS).map(([k,v])=>`<button class="chip ${k===sl.key?'on':''}" data-sitem="${k}">${k==='custom'?'+ Something else':v.name}</button>`).join('')}</div>
+      ${sl.key==='custom'?`<div class="field" style="margin-top:14px"><label>What is it?</label><input id="sell-custom" placeholder="e.g. desk, lamp, rug" value="${CUSTOM_NAME}"></div>`:''}
+      <button class="pill full" id="sell-photo">📷 Take a photo</button>
+      <p class="small" style="margin:12px 0 0">One clear photo in good light is enough.</p></div>`;return;}
+  if(sl.stage==='scanning'){el.innerHTML=scannerHTML('Looking at your photo…');return;}
+  const c=COND.find(x=>x[0]===sl.cond),nm=it.name,size=`about ${it.w} × ${it.d} × ${it.h} in`;
+  let body='';
+  if(sl.way==='sell'){
+    const p=SELLP[sl.key];
+    if(!p) body=`<div class="tip" style="margin-top:0">Used mattresses are hard to sell. Giving it away or recycling it is usually easier.<br><button class="pill small" data-way="give" style="margin-top:10px">See give-away options</button></div>`;
+    else{const lo=r5(p[0]*c[2]),hi=r5(p[1]*c[2]),mid=r5((lo+hi)/2);
+      const txt=`${nm} for sale, ${c[1].toLowerCase()} condition. Size: ${size}. I'm moving soon, so it needs to go by [date]. Pick up at [address]. Asking $${mid}. Message me if you're interested!`;
+      body=`<div class="big-rec" style="margin-top:0"><div><span class="label">Suggested price</span><b>$${lo}–$${hi}</b></div></div>
+      <p class="small" style="margin:8px 0 0">Sample prices for this demo. The real version would compare similar listings nearby.</p>
+      <h3 style="margin-top:18px">Your listing, ready to post</h3>
+      <textarea class="listing" id="sell-text">${txt}</textarea>
+      <button class="pill full" id="sell-copy">Copy listing</button>
+      <p class="small" style="margin:10px 0 0">Post it on Facebook Marketplace, Craigslist or Nextdoor. Fill in the date and address first.</p>`;}
+  } else {
+    const txt=`Free: ${nm}, ${c[1].toLowerCase()} condition, ${size}. I'm moving soon. It's yours if you can pick it up by [date]!`;
+    body=`<h3>Who could use it</h3>
+      <div class="opt"><span class="o1"><b>Neighbors in your building</b><span class="d">Posted on the building board, with the leasing office's OK</span></span></div>
+      <div class="opt"><span class="o1"><b>A local Buy Nothing group</b><span class="d">Neighbors give things to each other for free</span></span></div>
+      <div class="opt"><span class="o1"><b>A donation center</b><span class="d">For example, a Habitat for Humanity ReStore</span></span></div>
+      <div class="opt"><span class="o1"><b>Free pickup</b><span class="d">Coming later: we find someone to come and get it</span></span></div>
+      <h3 style="margin-top:18px">Your post, ready to share</h3>
+      <textarea class="listing" id="sell-text">${txt}</textarea>
+      <button class="pill full" id="sell-copy">Copy post</button>`;
+  }
+  el.innerHTML=`<div class="card"><div class="label">✓ Photo taken · ${nm}</div>
+    <div class="q">What condition is it in?</div>
+    <div class="chips">${COND.map(x=>`<button class="chip ${x[0]===sl.cond?'on':''}" data-cond="${x[0]}">${x[1]}</button>`).join('')}</div>
+    <div class="q">What would you like to do?</div>
+    <div class="seg big">${[['sell','Sell it'],['give','Give it away']].map(([k,l])=>`<button class="${sl.way===k?'on':''}" data-way="${k}">${l}</button>`).join('')}</div>
+  </div>
+  <div class="card">${body}</div>
+  <button class="pill ghost full" id="sell-again">Let go of something else</button>`;
+}
+document.getElementById('sell-body').addEventListener('click',async e=>{
+  let b;
+  if(b=e.target.closest('[data-sitem]')){sl.key=b.dataset.sitem;renderSell();return;}
+  if(e.target.id==='sell-photo'){sl.stage='scanning';renderSell();await sleep(1600);sl.done=true;sl.cond='good';sl.way=SELLP[sl.key]?'sell':'give';location.hash='sell-result';return;}
+  if(b=e.target.closest('[data-cond]')){sl.cond=b.dataset.cond;renderSell();return;}
+  if(b=e.target.closest('[data-way]')){sl.way=b.dataset.way;renderSell();return;}
+  if(e.target.id==='sell-again'){location.hash='sell';return;}
+  if(e.target.id==='sell-copy'){const t=document.getElementById('sell-text');try{await navigator.clipboard.writeText(t.value);e.target.textContent='✓ Copied';}catch(_){t.select();e.target.textContent='Press and hold the text to copy';}}
+});
+document.getElementById('sell-body').addEventListener('input',e=>{if(e.target.id==='sell-custom'){CUSTOM_NAME=e.target.value.replace(/[<>&"]/g,'');ITEMS.custom.name=CUSTOM_NAME.trim()||'Your furniture';}});
+
+/* ---------- FEATURE 3: CALL ---------- */
+let cbDone=false;
+const CARA_PHONE=''; // add your number here, e.g. '(650) 555-0123'
+if(CARA_PHONE){document.getElementById('phone-num').textContent=CARA_PHONE;document.getElementById('phone-link').href='tel:'+CARA_PHONE.replace(/[^0-9+]/g,'');}
+function chipGroup(id,multi){document.getElementById(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;if(!multi)c.parentNode.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.toggle('on',multi?!c.classList.contains('on'):true);});}
+chipGroup('cb-worry',true);chipGroup('cb-time',false);
+document.getElementById('cb').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('cb-name').value.trim()||'there';
+  const time=(document.querySelector('#cb-time .chip.on')||{}).textContent||'soon';
+  const t=document.getElementById('cb-thanks');
+  t.innerHTML=`<div class="avatar" style="margin:0 auto">C</div><h3 style="margin-top:12px">Thank you, ${name.replace(/[<>&]/g,'')}.</h3><p>I'll call you in the ${time.toLowerCase()}. We'll take it one step at a time.</p><div class="sign">— Cara</div>`;
+  cbDone=true;location.hash='call-done';
+});
+
+renderModebars();renderFit();renderTruck();renderTruck2();show();
+</script>
+</body>
+</html>
